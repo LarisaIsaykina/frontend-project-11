@@ -6,7 +6,7 @@ develop:
 
 build:
 	rm -rf dist
-	NODE_ENV=production pnx webpack
+	NODE_ENV=production npx webpack
 
 lint:
 	npx eslint .

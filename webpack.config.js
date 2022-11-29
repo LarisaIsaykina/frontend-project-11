@@ -25,6 +25,15 @@ module.exports = {
               'postcss-loader'
             ],
           },
+          {
+            test: /\.scss$/i,
+            use: [MiniCssExtractPlugin.loader, 
+              'sass-loader',
+              "css-loader",
+              'postcss-loader',
+              'sass-loader'
+            ],
+          },
       {
         test: /\.js$/,
         exclude: /node_modules/,
@@ -52,8 +61,8 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: '[name].css',
-      chunkFilename: '[id].css'
+      filename: '[name].scss',
+      chunkFilename: '[id].scss'
      }),
     new HtmlWebpackPlugin({
         template: './template.html' // указать здесь адрес исходного файла

@@ -20,7 +20,10 @@ module.exports = {
     rules: [
         {
             test: /\.css$/i,
-            use: [MiniCssExtractPlugin.loader, "css-loader"],
+            use: [MiniCssExtractPlugin.loader, 
+              "css-loader",
+              'postcss-loader'
+            ],
           },
       {
         test: /\.js$/,
@@ -32,11 +35,8 @@ module.exports = {
           },
         },
       },
-      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
-      {
-        test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader'],
-      },
+      { test: /\.css$/, use: [ 'css-loader', 'postcss-loader'] },
+      
       {
         test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         use: 'url-loader?limit=10000',
@@ -48,12 +48,13 @@ module.exports = {
     ],
   },
   plugins: [
+    new MiniCssExtractPlugin({
+      filename: '[name].css',
+      chunkFilename: '[id].css'
+     }),
     new HtmlWebpackPlugin({
         template: './template.html' // указать здесь адрес исходного файла
     }),
-   new MiniCssExtractPlugin({
-    filename: '[name].css',
-    chunkFilename: '[id].css'
-   })
+   
   ],
 };

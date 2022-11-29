@@ -35,7 +35,6 @@ module.exports = {
           },
         },
       },
-      { test: /\.css$/, use: [ 'css-loader', 'postcss-loader'] },
       
       {
         test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -44,6 +43,10 @@ module.exports = {
       {
         test: /\.(ttf|eot|svg)(\?[\s\S]+)?$/,
         use: 'file-loader',
+      },
+      {
+        test: /\.scss$/,
+        use: ['css-loader', 'sass-loader', 'postcss-loader'],
       },
     ],
   },

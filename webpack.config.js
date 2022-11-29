@@ -1,8 +1,21 @@
+
+const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
+    entry: './src/index.js',
+    output: {
+        filename: 'main.js',
+       path: path.resolve(__dirname,  'dist')
+   },
+
+    devServer: {
+        open: true,
+      },
+      
   mode: process.env.NODE_ENV || 'development',
+  devtool: false,
   module: {
     rules: [
         {
@@ -36,8 +49,11 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'template.html',
+        template: './template.html' // указать здесь адрес исходного файла
     }),
-   new MiniCssExtractPlugin()
+   new MiniCssExtractPlugin({
+    filename: '[name].css',
+    chunkFilename: '[id].css'
+   })
   ],
 };

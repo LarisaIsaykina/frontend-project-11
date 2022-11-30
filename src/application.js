@@ -73,6 +73,7 @@ const validateUrl = (href) => {
    
 
     form.addEventListener('submit', (e) => {
+      e.preventDefault();
       // watchedState.validationProcess.validationOccurred = false;
 
       const { value } = e.target;

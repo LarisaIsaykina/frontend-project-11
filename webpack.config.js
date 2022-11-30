@@ -1,21 +1,25 @@
 
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports = {
-    entry: './src/index.js',
-    output: {
-        filename: 'main.js',
-       path: path.resolve(__dirname,  'dist')
-   },
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
-    devServer: {
-        open: true,
-      },
-      
-  mode: process.env.NODE_ENV || 'development',
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+
+export default {
+  mode:  process.env.NODE_ENV || 'development',
   devtool: false,
+  devServer: {
+    open: true,
+  },
+  entry: './src/index.js',
+  output: {
+      filename: 'main.js',
+      path: resolve(__dirname,  'dist')
+ },
+
   module: {
     rules: [
    

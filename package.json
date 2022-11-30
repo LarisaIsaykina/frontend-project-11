@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "RSS-agregator",
   "main": "./src/index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -94,6 +95,7 @@
     "mime-types": "^2.1.35",
     "neo-async": "^2.6.2",
     "node-releases": "^2.0.6",
+    "on-change": "^4.0.2",
     "p-limit": "^2.3.0",
     "p-locate": "^4.1.0",
     "p-try": "^2.2.0",
@@ -128,6 +130,7 @@
     "webpack-merge": "^5.8.0",
     "webpack-sources": "^3.2.3",
     "which": "^2.0.2",
-    "wildcard": "^2.0.0"
+    "wildcard": "^2.0.0",
+    "yup": "^0.32.11"
   }
 }

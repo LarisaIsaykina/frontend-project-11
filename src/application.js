@@ -9,7 +9,7 @@ const app = () => {
   const initialState = {
     validationProcess: {
       validationOccurred: false,
-      isValid: false,
+      isValid: '',
       data: {
         hrefValue: '',
       },
@@ -38,60 +38,43 @@ const watchedState = onChange(initialState, (path, value, previous) => {
   }
 });
 
-const existingFeeds = watchedState.rssFeeds;
 
-  const schema = yup.object().shape({
-      href: yup.string().url().required('Ссылка должна быть валидным URL').notOneOf(existingFeeds, 'RSS уже существует')    
-    });
-
-const validateUrl = (href) => {
-
-  console.log('HREF', href);
-
-    const urlObj = new URL(href); 
-
-  console.log('OBJect URL', obj);
-
-    schema.isValid(urlObj)
-
-    .then((ref) => {
-
-      console.log('is validaton going???')
-      ref; // => true
-    })
-
-    .catch((err) => {
-      console.log('validation???');
-
-      err.name; // => 'ValidationError'
-
-    });
+  const form = document.getElementsByClassName('rss-form')[0];
   
-};
-
-  const form = document.querySelector('.rss-form');
-   
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      // watchedState.validationProcess.validationOccurred = false;
+      watchedState.validationProcess.validationOccurred = false;
+      const formData = new FormData(e.target);
+      const value = formData.get('url');
 
-      const { value } = e.target;
+      watchedState.validationProcess.data.hrefValue = value;
+      const existingFeeds = watchedState.rssFeeds; 
 
-      console.log( 'e event', value);
+      const schema = yup.string().url().required('Ссылка должна быть валидным URL').notOneOf(existingFeeds, 'RSS уже существует');
 
-      // watchedState.validationProcess.data.hrefValue = value;
+      schema.isValid(value, { abortEarly: false })
 
-      // validateUrl(value)
-      // .then((boolean) => {
-      //   watchedState.validationProcess.isValid = boolean;
+     
+      .catch((err) => {
+        console.log('err message', err.errors);
+        
+        err.name; // => 'ValidationError'
+  
+      })
+      .then((boolean) => {
+  
+        console.log('result val', boolean)
+        watchedState.validationProcess.isValid = boolean;
+        if (boolean === true) {
 
-
-      //   if (boolean === true) {
-      //     watchedState.rssFeeds.push(value);
-      //   }
-      //   watchedState.validationProcess.validationOccurred = true;
-      // });     
+          watchedState.rssFeeds.push(value);
+          console.log(watchedState.rssFeeds, 'rss feeds');
+        }
+        console.log('errors, path', ValidationError);
+      });
+      
+      
 });
 
 };

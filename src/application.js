@@ -1,5 +1,8 @@
 import * as yup from 'yup';
+import { setLocale } from 'yup';
 import viewerFn from './viewer.js'
+import ru from '../locales/ru.js'
+import i18n from 'i18next';
 
 
 const app = () => {
@@ -15,8 +18,25 @@ const app = () => {
     },
     rssFeeds: [],
     rssLoaded: [],
-    successMessage: 'RSS успешно загружен',
   };
+
+  const i18nInstance = i18n.createInstance();
+  
+    i18nInstance.init({
+      lng: 'ru',
+      debug: true,
+      resources: {
+        ru,
+      },
+  }).then(() => {
+    
+    document.querySelector('h1').textContent = i18nInstance.t('header1');
+    document.querySelector('.lead').textContent = i18nInstance.t('header2');
+    document.querySelector('button[type="submit"]').textContent = i18nInstance.t('btnSubmit');
+    document.querySelector('label[for="url-input"]').textContent = i18nInstance.t('inputLabel');
+    
+    });
+     
 
   const watchedState = viewerFn(initialState);
 
@@ -36,9 +56,23 @@ const app = () => {
 
       const existingFeeds = watchedState.rssFeeds; 
 
-      const schema = yup.string('Ссылка должна быть валидным URL').url('Ссылка должна быть валидным URL').required('Ссылка должна быть not empty').notOneOf(existingFeeds, 'RSS уже существует');
+    
+      setLocale({
+        mixed: {
+          notOneOf: i18nInstance.t('existingRssError'),
+        },
+        
+        string: {
+          url: i18nInstance.t('invalidRssError'),
+        }
+      });
+ 
+
+      const schema = yup.string().url().notOneOf(existingFeeds);
       watchedState.validationProcess.data.hrefValue = value;
+      
       schema.validate(value)
+      
       .then((val) => {
   
         watchedState.rssFeeds.push(val);
@@ -53,8 +87,9 @@ const app = () => {
         })
      
       .catch((err) => {
+        
 
-        console.log('err message', err.errors);
+        console.log('err message', err.name);
         watchedState.validationProcess.error = err.errors;  
         watchedState.validationProcess.isValid = false;
         watchedState.validationProcess.validationOccurred = true;

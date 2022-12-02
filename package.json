@@ -77,6 +77,7 @@
     "graceful-fs": "^4.2.10",
     "has": "^1.0.3",
     "has-flag": "^4.0.0",
+    "i18next": "^22.0.6",
     "import-local": "^3.1.0",
     "interpret": "^3.1.1",
     "is-core-module": "^2.11.0",

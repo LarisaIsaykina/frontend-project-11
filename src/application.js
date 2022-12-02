@@ -37,7 +37,7 @@ const app = () => {
       const existingFeeds = watchedState.rssFeeds; 
 
       const schema = yup.string('Ссылка должна быть валидным URL').url('Ссылка должна быть валидным URL').required('Ссылка должна быть валидным URL').notOneOf(existingFeeds, 'RSS уже существует');
-
+      watchedState.validationProcess.data.hrefValue = value;
       schema.validate(value)
       .then((val) => {
   
@@ -47,7 +47,7 @@ const app = () => {
         watchedState.validationProcess.validationOccurred = true;
         watchedState.rssLoaded.push(val);
 
-        console.log('watched state', watchedState);
+        console.log('watched state then', watchedState);
 
         })
      
@@ -57,13 +57,9 @@ const app = () => {
         watchedState.validationProcess.error = err.errors;  
         watchedState.validationProcess.isValid = false;
         watchedState.validationProcess.validationOccurred = true;
-        console.log('watched state', watchedState);
+        console.log('watched state catch', watchedState);
         console.log('value from input', watchedState);
-
-
-
-
-    
+  
        
       });
       

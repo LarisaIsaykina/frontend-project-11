@@ -1,10 +1,8 @@
 import * as yup from 'yup';
-import onChange from 'on-change';
-
+import viewerFn from './viewer.js'
 
 
 const app = () => {
-
 
   const initialState = {
     validationProcess: {
@@ -13,65 +11,60 @@ const app = () => {
       data: {
         hrefValue: '',
       },
-      errorData: {},
+      error: '',
     },
     rssFeeds: [],
+    rssLoaded: [],
+    successMessage: 'RSS успешно загружен',
   };
 
+  const watchedState = viewerFn(initialState);
 
+  const form = document.querySelector('.rss-form');
+  const feedBackMessageParagraph = document.querySelector('.feedback');
+  const urlInput = document.getElementById('url-input');
 
-
-const watchedState = onChange(initialState, (path, value, previous) => {
-  if (path === 'watchedState.validationProcess.validationOccurred') {
-    if (watchedState.validationProcess.isValid === false) {
-      
-      const form = document.querySelector('.rss-form');
-      const input = document.getElementById('url-input');
-
-      form.focus();
-      input.classList.add('is-invalid');
-    }
-  }
-  if (path === 'watchedState.validationProcess.isValid') {
-  }
-  if (path === 'watchedState.validationProcess.validationOccurred') {
-  }
-});
-
-
-  const form = document.getElementsByClassName('rss-form')[0];
-  
 
     form.addEventListener('submit', (e) => {
+
       e.preventDefault();
-      watchedState.validationProcess.validationOccurred = false;
+      console.log('e', e);
+      watchedState.validationProcess.validationOccurred = '';
+
       const formData = new FormData(e.target);
       const value = formData.get('url');
 
-      watchedState.validationProcess.data.hrefValue = value;
       const existingFeeds = watchedState.rssFeeds; 
 
-      const schema = yup.string().url().required('Ссылка должна быть валидным URL').notOneOf(existingFeeds, 'RSS уже существует');
+      const schema = yup.string('Ссылка должна быть валидным URL').url('Ссылка должна быть валидным URL').required('Ссылка должна быть валидным URL').notOneOf(existingFeeds, 'RSS уже существует');
 
-      schema.isValid(value, { abortEarly: false })
+      schema.validate(value)
+      .then((val) => {
+  
+        watchedState.rssFeeds.push(val);
+        console.log(watchedState.rssFeeds, 'rss feeds');
+        watchedState.validationProcess.isValid = true;
+        watchedState.validationProcess.validationOccurred = true;
+        watchedState.rssLoaded.push(val);
 
+        console.log('watched state', watchedState);
+
+        })
      
       .catch((err) => {
-        console.log('err message', err.errors);
-        
-        err.name; // => 'ValidationError'
-  
-      })
-      .then((boolean) => {
-  
-        console.log('result val', boolean)
-        watchedState.validationProcess.isValid = boolean;
-        if (boolean === true) {
 
-          watchedState.rssFeeds.push(value);
-          console.log(watchedState.rssFeeds, 'rss feeds');
-        }
-        console.log('errors, path', ValidationError);
+        console.log('err message', err.errors);
+        watchedState.validationProcess.error = err.errors;  
+        watchedState.validationProcess.isValid = false;
+        watchedState.validationProcess.validationOccurred = true;
+        console.log('watched state', watchedState);
+        console.log('value from input', watchedState);
+
+
+
+
+    
+       
       });
       
       

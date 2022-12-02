@@ -33,6 +33,7 @@ const app = () => {
 
       const formData = new FormData(e.target);
       const value = formData.get('url');
+      console.log('value from event', value);
 
       const existingFeeds = watchedState.rssFeeds; 
 
@@ -45,7 +46,6 @@ const app = () => {
         console.log(watchedState.rssFeeds, 'rss feeds');
         watchedState.validationProcess.isValid = true;
         watchedState.validationProcess.validationOccurred = true;
-        watchedState.rssLoaded.push(val);
 
         console.log('watched state then', watchedState);
 
@@ -59,8 +59,11 @@ const app = () => {
         watchedState.validationProcess.validationOccurred = true;
         console.log('watched state catch', watchedState);
         console.log('value from input', watchedState);
-  
-       
+
+      })
+      .then(() => {
+        watchedState.rssLoaded.push();
+
       });
       
       

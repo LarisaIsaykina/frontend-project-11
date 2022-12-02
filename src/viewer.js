@@ -12,11 +12,9 @@ const viewerFn = (initialState) => {
             feedBackMessageParagraph.classList.remove('text-danger');
             feedBackMessageParagraph.classList.add('text-success');
             feedBackMessageParagraph.textContent = watchedState.successMessage;
-            form.reset();
+            
 
-            form.focus();
-
-        } else {
+        } else if (watchedState.validationProcess.isValid === false) {
           urlInput.classList.add('is-invalid');
           feedBackMessageParagraph.classList.remove('text-success');
           feedBackMessageParagraph.classList.add('text-danger');
@@ -24,7 +22,8 @@ const viewerFn = (initialState) => {
     
         }
       } else if (path === 'rssLoaded') {
-        
+          urlInput.value = '';
+          form.focus();
       }
     });
     return watchedState;

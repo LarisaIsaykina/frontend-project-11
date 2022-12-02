@@ -29,7 +29,6 @@ const app = () => {
 
       e.preventDefault();
       console.log('e', e);
-      watchedState.validationProcess.validationOccurred = '';
 
       const formData = new FormData(e.target);
       const value = formData.get('url');
@@ -46,6 +45,8 @@ const app = () => {
         console.log(watchedState.rssFeeds, 'rss feeds');
         watchedState.validationProcess.isValid = true;
         watchedState.validationProcess.validationOccurred = true;
+        watchedState.validationProcess.validationOccurred = '';
+
 
         console.log('watched state then', watchedState);
 
@@ -57,15 +58,13 @@ const app = () => {
         watchedState.validationProcess.error = err.errors;  
         watchedState.validationProcess.isValid = false;
         watchedState.validationProcess.validationOccurred = true;
+        watchedState.validationProcess.validationOccurred = '';
+
         console.log('watched state catch', watchedState);
         console.log('value from input', watchedState);
 
-      })
-      .then(() => {
-        watchedState.rssLoaded.push();
-
       });
-      
+
       
 });
 

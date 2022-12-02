@@ -12,6 +12,8 @@ const viewerFn = (initialState) => {
             feedBackMessageParagraph.classList.remove('text-danger');
             feedBackMessageParagraph.classList.add('text-success');
             feedBackMessageParagraph.textContent = watchedState.successMessage;
+            urlInput.value = '';
+            form.focus();
             
 
         } else if (watchedState.validationProcess.isValid === false) {
@@ -21,9 +23,7 @@ const viewerFn = (initialState) => {
           feedBackMessageParagraph.textContent = watchedState.validationProcess.error;
     
         }
-      } else if (path === 'rssLoaded') {
-          urlInput.value = '';
-          form.focus();
+
       }
     });
     return watchedState;

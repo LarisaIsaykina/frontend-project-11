@@ -36,7 +36,7 @@ const app = () => {
 
       const existingFeeds = watchedState.rssFeeds; 
 
-      const schema = yup.string('Ссылка должна быть валидным URL').url('Ссылка должна быть валидным URL').required('Ссылка должна быть валидным URL').notOneOf(existingFeeds, 'RSS уже существует');
+      const schema = yup.string('Ссылка должна быть валидным URL').url('Ссылка должна быть валидным URL').required('Ссылка должна быть not empty').notOneOf(existingFeeds, 'RSS уже существует');
       watchedState.validationProcess.data.hrefValue = value;
       schema.validate(value)
       .then((val) => {

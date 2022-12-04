@@ -3,6 +3,8 @@ import { setLocale } from 'yup';
 import viewerFn from './viewer.js'
 import ru from '../locales/ru.js'
 import i18n from 'i18next';
+import parse from './parser.js';
+import _ from 'lodash';
 
 
 const app = () => {
@@ -16,8 +18,11 @@ const app = () => {
       },
       error: '',
     },
-    rssFeeds: [],
-    rssLoaded: [],
+    noRssError: [],
+    feeds: [],
+
+    posts: [],
+
   };
 
   const i18nInstance = i18n.createInstance();
@@ -48,57 +53,68 @@ const app = () => {
     form.addEventListener('submit', (e) => {
 
       e.preventDefault();
-      console.log('e', e);
-
       const formData = new FormData(e.target);
       const value = formData.get('url');
-      console.log('value from event', value);
-
-      const existingFeeds = watchedState.rssFeeds; 
-
+      const existingFeeds = watchedState.feeds.map((feed) => feed.title); 
     
       setLocale({
         mixed: {
           notOneOf: i18nInstance.t('existingRssError'),
         },
-        
         string: {
           url: i18nInstance.t('invalidRssError'),
         }
       });
  
-
       const schema = yup.string().url().notOneOf(existingFeeds);
       watchedState.validationProcess.data.hrefValue = value;
       
       schema.validate(value)
       
       .then((val) => {
+        return fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(val)}`)
+      })
+   
+      .then((response) => {
   
-        watchedState.rssFeeds.push(val);
-        console.log(watchedState.rssFeeds, 'rss feeds');
-        watchedState.validationProcess.isValid = true;
-        watchedState.validationProcess.validationOccurred = true;
-        watchedState.validationProcess.validationOccurred = '';
-
-
-        console.log('watched state then', watchedState);
+        if (response.ok) return response.json()
+          throw new Error('Network response was not ok.')
 
         })
-     
-      .catch((err) => {
-        
+      .then((data) => {
+        console.log(data);
+        const dataType = data.contents;
+        console.log(dataType);
 
-        console.log('err message', err.name);
+          if (!dataType.includes('rss')) {
+            watchedState.noRssError.push(i18nInstance.t('noRssError'));
+          } else {
+            const val = watchedState.validationProcess.data.hrefValue;
+            watchedState.feeds.push({ title: val , id: _.uniqueId('f') });
+            watchedState.validationProcess.isValid = true;
+            watchedState.validationProcess.validationOccurred = true;
+            watchedState.validationProcess.validationOccurred = '';
+  
+            const dom = parse(data.contents);
+            const title = dom.body.rss.channel;
+            console.log('dom.body.rss.channel;', title);
+    
+
+          }
+        })
+        
+     
+      .catch((err) => { // ошибка невалидный адрес -> невалидный стиль
+        console.log('err', err);
         watchedState.validationProcess.error = err.errors;  
         watchedState.validationProcess.isValid = false;
         watchedState.validationProcess.validationOccurred = true;
         watchedState.validationProcess.validationOccurred = '';
+      })
 
-        console.log('watched state catch', watchedState);
-        console.log('value from input', watchedState);
-
-      });
+  
+     
+      ;
 
       
 });

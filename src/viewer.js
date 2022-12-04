@@ -39,6 +39,10 @@ const viewerFn = (initialState) => {
     
       }
 
+    } else if (path === 'noRssError') {
+      feedBackMessageParagraph.textContent = value[value.length - 1];
+
+  
     }
   });
  

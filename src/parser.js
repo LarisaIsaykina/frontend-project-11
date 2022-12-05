@@ -1,4 +1,4 @@
 export default (doc) => {
-    const domDoc = new window.DOMParser();
+    const domDoc = new DOMParser();
     return domDoc.parseFromString(doc, 'text/html');
 };

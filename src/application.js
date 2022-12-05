@@ -82,9 +82,9 @@ const app = () => {
 
         })
       .then((data) => {
-        console.log(data);
+        //console.log(data);
         const dataType = data.contents;
-        console.log(dataType);
+        //console.log(dataType);
 
           if (!dataType.includes('rss')) {
             watchedState.noRssError.push(i18nInstance.t('noRssError'));
@@ -96,9 +96,28 @@ const app = () => {
             watchedState.validationProcess.validationOccurred = '';
   
             const dom = parse(data.contents);
-            const title = dom.body.rss.channel;
-            console.log('dom.body.rss.channel;', title);
-    
+            console.log('body nodes child', dom.body.rss.channel.childNodes);
+
+            const titles = dom.getElementsByTagName('title');
+           
+              Array.from(titles).forEach((title) => {
+                console.log(title.innerText);
+              })
+              const descriptions = dom.getElementsByTagName('description');
+                   
+              Array.from(descriptions).forEach((item) => {
+                console.log(item, item.innerText);
+              })
+
+              const links = dom.getElementsByTagName('link');
+        
+           
+              Array.from(links).forEach((item) => {
+                console.log('link', item.nextSibling);
+              })
+
+
+              
 
           }
         })

@@ -5,23 +5,30 @@ import ru from '../locales/ru.js'
 import i18n from 'i18next';
 import parse from './parser.js';
 import _ from 'lodash';
-
+import fetchWithTimeout from './fetchWithTimeout.js';
 
 const app = () => {
 
   const initialState = {
+
+    process: 'default', // validationFail // rssLoaded
+
     validationProcess: {
-      validationOccurred: false,
       isValid: '',
       data: {
         hrefValue: '',
       },
       error: '',
     },
+
     noRssError: [],
     feeds: [],
 
     posts: [],
+
+    validatedUrls: [],
+    newPosts: [],
+    
 
   };
 
@@ -42,20 +49,16 @@ const app = () => {
     
     });
      
-
   const watchedState = viewerFn(initialState);
 
   const form = document.querySelector('.rss-form');
-  const feedBackMessageParagraph = document.querySelector('.feedback');
-  const urlInput = document.getElementById('url-input');
-
 
     form.addEventListener('submit', (e) => {
 
       e.preventDefault();
       const formData = new FormData(e.target);
       const value = formData.get('url');
-      const existingFeeds = watchedState.feeds.map((feed) => feed.title); 
+      const existingReferences = watchedState.validatedUrls;
     
       setLocale({
         mixed: {
@@ -66,78 +69,56 @@ const app = () => {
         }
       });
  
-      const schema = yup.string().url().notOneOf(existingFeeds);
-      watchedState.validationProcess.data.hrefValue = value;
+      const schema = yup.string().url().notOneOf(existingReferences);
       
       schema.validate(value)
-      
-      .then((val) => {
-        return fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(val)}`)
-      })
-   
-      .then((response) => {
-  
-        if (response.ok) return response.json()
-          throw new Error('Network response was not ok.')
 
-        })
-      .then((data) => {
-        //console.log(data);
-        const dataType = data.contents;
-        //console.log(dataType);
-
-          if (!dataType.includes('rss')) {
-            watchedState.noRssError.push(i18nInstance.t('noRssError'));
-          } else {
-            const val = watchedState.validationProcess.data.hrefValue;
-            watchedState.feeds.push({ title: val , id: _.uniqueId('f') });
-            watchedState.validationProcess.isValid = true;
-            watchedState.validationProcess.validationOccurred = true;
-            watchedState.validationProcess.validationOccurred = '';
-  
-            const dom = parse(data.contents);
-            console.log('body nodes child', dom.body.rss.channel.childNodes);
-
-            const titles = dom.getElementsByTagName('title');
-           
-              Array.from(titles).forEach((title) => {
-                console.log(title.innerText);
-              })
-              const descriptions = dom.getElementsByTagName('description');
-                   
-              Array.from(descriptions).forEach((item) => {
-                console.log(item, item.innerText);
-              })
-
-              const links = dom.getElementsByTagName('link');
-        
-           
-              Array.from(links).forEach((item) => {
-                console.log('link', item.nextSibling);
-              })
-
-
-              
-
-          }
-        })
-        
-     
       .catch((err) => { // ошибка невалидный адрес -> невалидный стиль
         console.log('err', err);
         watchedState.validationProcess.error = err.errors;  
-        watchedState.validationProcess.isValid = false;
-        watchedState.validationProcess.validationOccurred = true;
-        watchedState.validationProcess.validationOccurred = '';
+        watchedState.process = 'validationFail';
+        watchedState.process = '';
+      })
+      
+      .then((val) => {
+        watchedState.validationProcess.data.hrefValue = val;
+        watchedState.validatedUrls.push(val);
+        return fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(val)}`)
+
       })
 
+      .then((response) => {
   
-     
-      ;
+        if (response.ok) return response.json();
+        return Promise.reject(response);
+      })
 
+       
+      .then((data) => {
+        console.log(data, 'data');
+        const { contents } = data;
+          if (!contents.includes('rss')) {
+            watchedState.noRssError.push(i18nInstance.t('noRssError'));
+          } else {
+            const extractedData = parse(contents);
+            const { feed, posts } = extractedData;
+            watchedState.feeds.push(feed);
+            watchedState.posts.push(posts);
+            
+            watchedState.process = 'rssLoaded';
+            watchedState.process = '';
+          }
       
-});
+        })
+        .then(() => {
+          const { validatedUrls } = watchedState;
 
+          validatedUrls.forEach((url) => {
+            fetchWithTimeout(url, watchedState);
+          })
+        });
+
+  });
 };
 
 export default app;

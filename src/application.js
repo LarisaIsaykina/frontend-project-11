@@ -6,6 +6,7 @@ import i18n from 'i18next';
 import parse from './parser.js';
 import _ from 'lodash';
 import fetchWithTimeout from './fetchWithTimeout.js';
+import 'bootstrap';
 
 const app = () => {
 
@@ -102,6 +103,8 @@ const app = () => {
           if (!contents.includes('rss')) {
             watchedState.noRssError.push(i18nInstance.t('noRssError'));
           } else {
+
+            console.log('точка останова в else after first parse');
             const extractedData = parse(contents);
             const { feed, posts } = extractedData;
             watchedState.feeds.push(feed);
@@ -109,29 +112,31 @@ const app = () => {
             
             watchedState.process = 'rssLoaded';
             watchedState.process = '';
+           
           }
-      
+        })
+        .then(() => {
+          console.log('els in then', document.getElementsByClassName('btn-outline-primary'));
+
+          Array.from(document.getElementsByClassName('btn-outline-primary')).forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              watchedState.process = 'modalWindow';
+              watchedState.activePost = bnt.dataset.id;
+  
+            })
+          })
         })
         .then(() => {
           const { validatedUrls } = watchedState;
-          console.log(watchedState, 'state');
-
 
           validatedUrls.forEach((url) => {
             fetchWithTimeout(url, watchedState);
           })
-        });
+        })
 
-  });
-  Array.from(document.querySelectorAll('.btn-outline-primary')).forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      watchedState.process = 'modalWindow';
-      watchedState.activePost = bnt.closest('a').textContent;
-      
+      })
 
-    })
-  })
 };
 
 export default app;

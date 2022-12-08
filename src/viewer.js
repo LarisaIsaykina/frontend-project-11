@@ -103,17 +103,15 @@ const viewerFn = (initialState) => {
           li.append(a);
 
           const btn = document.createElement('button');
-          btn.id = _.uniqueId('btn'),
           btn.classList.add('btn', 'btn-outline-primary');
-          btn.setAttribute('data-toggle', 'modal');
           btn.setAttribute('type', 'button');
           btn.setAttribute('data-id', post.id);
 
 
-          btn.setAttribute('data-target', "#modal");
+          btn.setAttribute('data-bs-toggle', "modal");
           btn.setAttribute('data-bs-target', "#modal");
 
-          btn.textContent =  i18nInstance.t('see');
+          btn.textContent =  i18nInstance.t('see');        
           li.appendChild(btn);
           return li;
         });
@@ -138,8 +136,18 @@ const viewerFn = (initialState) => {
 
        
       } else if (value === 'modalWindow') {
-        const { activePost } = watchedState;
-        const modalElement = document.getElementById('modal');
+        const { activePost, posts } = watchedState;
+
+        const postData = posts.find((item) => item.id === activePost);
+        const modalTitle = document.querySelector('.modal-title');
+        console.log(activePost, "activepost");
+        modalTitle.textContent = postData.title;
+        const modalBody = document.querySelector('.modal-body');
+        modalBody.textContent = postData.description;
+        const modalHref = document.querySelector('.full-article');
+        modalHref.href = postData.link;
+
+
         
       }
 

@@ -48,9 +48,21 @@ export default (contents, viewer) => {
      
       viewer.newPosts = newPosts;
       viewer.process = 'rssUpdated';
-      viewer.process = '';
+      viewer.process = '';   
+    
     }
-    console.log('new posts', newPosts);
-  
+    console.log('els in then', document.getElementsByClassName('btn-outline-primary'));
+
+    Array.from(document.getElementsByClassName('btn-outline-primary')).forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        watchedState.process = 'modalWindow';
+        watchedState.activePost = bnt.dataset.id;
+      })
+    });
+
+
+
+
 
 };

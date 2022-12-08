@@ -11,7 +11,9 @@ const app = () => {
 
   const initialState = {
 
-    process: 'default', // validationFail // rssLoaded
+    process: 'default', // validationFail // rssLoaded // modal window opened
+
+    activePost: '',
 
     validationProcess: {
       isValid: '',
@@ -112,6 +114,8 @@ const app = () => {
         })
         .then(() => {
           const { validatedUrls } = watchedState;
+          console.log(watchedState, 'state');
+
 
           validatedUrls.forEach((url) => {
             fetchWithTimeout(url, watchedState);
@@ -119,6 +123,15 @@ const app = () => {
         });
 
   });
+  Array.from(document.querySelectorAll('.btn-outline-primary')).forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      watchedState.process = 'modalWindow';
+      watchedState.activePost = bnt.closest('a').textContent;
+      
+
+    })
+  })
 };
 
 export default app;

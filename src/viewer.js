@@ -2,6 +2,9 @@ import onChange from 'on-change';
 import ru from '../locales/ru.js'
 import i18n from 'i18next';
 import { setLocale } from 'yup';
+import _ from 'lodash';
+import 'bootstrap';
+
 
 
 const form = document.querySelector('.rss-form');
@@ -28,12 +31,11 @@ const viewerFn = (initialState) => {
       if (value === 'validationFail') {
           urlInput.classList.add('is-invalid');
           feedBackMessageParagraph.textContent = '';
-
           feedBackMessageParagraph.classList.remove('text-success');
           feedBackMessageParagraph.classList.add('text-danger');
           feedBackMessageParagraph.textContent = watchedState.validationProcess.error;
   
-      } else if (value === 'rssLoaded') {
+      } else if (value === 'rssLoaded' || value == 'rssUpdated') {
         feedBackMessageParagraph.textContent = '';
 
         urlInput.classList.remove('is-invalid');
@@ -47,25 +49,31 @@ const viewerFn = (initialState) => {
         postsContainer.innerHTML = '';
         feedsContainer.innerHTML = '';
 
-        const headerPosts = document.createElement('h3');
-      
+        const feedsInnerContainer = document.createElement('div');
+        feedsInnerContainer.id = 'currentFeed';
+        const postsInnerContainer = document.createElement('div');
+        postsInnerContainer.id = 'currentPosts';
+
         const headerFeed = document.createElement('h3');
         const titleFeed = document.createElement('p');
         const descriptionFeed = document.createElement('p');
-        const feedInnerContainer = document.createElement('div');
-        feedInnerContainer.id = 'currentFeed';
+  
 
-        const postsInnerContainer = document.createElement('div');
-        postsInnerContainer.id = 'currentPosts';
+        const headerPosts = document.createElement('h3');
+        const ulFeeds = document.createElement('ul');
+        ulFeeds.classList.add('list-group', 'border-0');
+        ulFeeds.id = 'ulFeeds';
+
+
         const ulPosts = document.createElement('ul');
-        ulPosts.classList.add('list-unstyled');
+        ulPosts.classList.add('list-group', 'border-0');
+        ulPosts.id = 'ulPosts';
         postsInnerContainer.append(ulPosts);
 
-        headerPosts.textContent = 'Posts';
-        postsContainer.append(headerPosts, postsInnerContainer);
-        feedInnerContainer.append(titleFeed, descriptionFeed);
-        feedsContainer.append(headerFeed, feedInnerContainer);
+        feedsInnerContainer.append(ulFeeds);
 
+        headerPosts.textContent = 'Posts';
+       
         headerFeed.textContent = 'Feeds';
         const { feeds, posts } = watchedState;
         const currFeed = feeds[feeds.length - 1];
@@ -73,56 +81,68 @@ const viewerFn = (initialState) => {
 
         titleFeed.textContent = title;
         descriptionFeed.textContent = description;
+        feedsInnerContainer.append(ulFeeds);
+
+        feedsContainer.append(headerFeed, feedsInnerContainer);
+        postsContainer.append(headerPosts, postsInnerContainer);
 
         const currPosts = posts.filter((post) => post.fId === id);
+        
+
         const postEls = currPosts.map((post) => {
           const li = document.createElement('li');
+          li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
           const a = document.createElement('a');
+
           a.href = post.link;
           a.textContent = post.title;
+          a.setAttribute('data-id', post.id);
 
-        li.append(a);
 
+          li.append(a);
+
+          const btn = document.createElement('button');
+          btn.id = _.uniqueId('btn'),
+          btn.classList.add('btn', 'btn-outline-primary');
+          btn.setAttribute('data-toggle', 'modal');
+          btn.setAttribute('type', 'button');
+          btn.setAttribute('data-id', post.id);
+
+
+          btn.setAttribute('data-target', "#modal");
+          btn.setAttribute('data-bs-target', "#modal");
+
+          btn.textContent =  i18nInstance.t('see');
+          li.appendChild(btn);
           return li;
         });
-        ulPosts.append(...postEls);
 
+        ulPosts.append(...postEls);
         postsInnerContainer.replaceChildren(ulPosts);
 
-        const btnContainer = document.createElement('span');
-        btnContainer.classList.add("btn-group-vertical");
-        btnContainer.setAttribute('role', 'group');
-        btnContainer.setAttribute('aria-label', 'Basic example');
-
-
-        currPosts.forEach((post) => {
-        const btn = document.createElement('button');
-        btn.classList.add('btn', 'btn-primary');
-        btn.setAttribute('data-toggle', 'modal');
-        btn.setAttribute('type', 'button');
-        btn.setAttribute('data-target', "#exampleModal");
-        btn.textContent =  i18nInstance.t('see');
-        btnContainer.append(btn);
-
-        });
-        postsContainer.append(btnContainer);
-        
-        
-      } else if (value === 'rssUpdated') {
-        const ul = document.querySelector('.list-unstyled');
-        const { newPosts } = watchedState;
-        const newPostEls = newPosts.map((post) => {
+        const feedEls = feeds.map((feed) => {
           const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href = post.link;
-          a.textContent = post.title;
-          li.append(a);
+          li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+          const h = document.createElement('h3');
+          h.textContent = feed.title;
+          console.log('feed', feed);
+          const p = document.createElement('p');
+          p.textContent = feed.description;
+          li.append(h, p);
           return li;
         });
-        ul.prepend(...newPostEls);
+
+        ulFeeds.append(...feedEls);
+        feedsInnerContainer.replaceChildren(ulFeeds);
+
        
+      } else if (value === 'modalWindow') {
+        const { activePost } = watchedState;
+        const modalElement = document.getElementById('modal');
+        
       }
+
 
     } else if (path === 'noRssError') {
         

@@ -112,6 +112,9 @@ const app = () => {
 
             const extractedData = parse(contents);
             const { feed, posts1 } = extractedData;
+            if (_.isEmpty(posts1)) {
+              watchedState.noRssError.push(i18nInstance.t('emptyRss'));
+            }
             const { posts } = watchedState;
             watchedState.feeds.push(feed);
             watchedState.posts = [...posts, ...posts1];

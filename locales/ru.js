@@ -9,6 +9,7 @@ export default {
       successMessage: 'RSS успешно загружен',
       existingRssError: 'RSS уже существует',
       invalidRssError: 'Ссылка должна быть валидным URL',
+      emptyRss: 'Не должно быть пустым',
       noRssError: 'Ресурс не содержит валидный RSS',
       networkError: 'Ошибка сети',
       read: 'Читать полностью',

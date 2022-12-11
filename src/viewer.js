@@ -35,7 +35,7 @@ const viewerFn = (initialState) => {
           feedBackMessageParagraph.classList.add('text-danger');
           feedBackMessageParagraph.textContent = watchedState.validationProcess.error;
   
-      } else if (value === 'rssLoaded' || value == 'rssUpdated') {
+      } else if (value === 'rssLoaded' || value === 'rssUpdated') {
         feedBackMessageParagraph.textContent = '';
 
         urlInput.classList.remove('is-invalid');
@@ -79,6 +79,7 @@ const viewerFn = (initialState) => {
         const currFeed = feeds[feeds.length - 1];
         const { title, id, description } = currFeed;
 
+
         titleFeed.textContent = title;
         descriptionFeed.textContent = description;
         feedsInnerContainer.append(ulFeeds);
@@ -87,7 +88,9 @@ const viewerFn = (initialState) => {
         postsContainer.append(headerPosts, postsInnerContainer);
 
         const currPosts = posts.filter((post) => post.fId === id);
-        
+
+       
+        const postsUiState = watchedState.uiState.displayed;
 
         const postEls = currPosts.map((post) => {
           const li = document.createElement('li');
@@ -97,8 +100,12 @@ const viewerFn = (initialState) => {
 
           a.href = post.link;
           a.textContent = post.title;
+          a.dataset.id = post.id;
+          const postInUi = postsUiState.find((item) => item.id === post.id);
+          const { style } = postInUi;
+          const styleToApply = (style === 'default') ? 'fw-bold' : 'fw-normal';
+          a.classList.add(styleToApply);
           a.setAttribute('data-id', post.id);
-
 
           li.append(a);
 
@@ -106,7 +113,6 @@ const viewerFn = (initialState) => {
           btn.classList.add('btn', 'btn-outline-primary');
           btn.setAttribute('type', 'button');
           btn.setAttribute('data-id', post.id);
-
 
           btn.setAttribute('data-bs-toggle', "modal");
           btn.setAttribute('data-bs-target', "#modal");
@@ -116,6 +122,7 @@ const viewerFn = (initialState) => {
           return li;
         });
 
+
         ulPosts.append(...postEls);
         postsInnerContainer.replaceChildren(ulPosts);
 
@@ -124,15 +131,15 @@ const viewerFn = (initialState) => {
           li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
           const h = document.createElement('h3');
           h.textContent = feed.title;
-          console.log('feed', feed);
           const p = document.createElement('p');
           p.textContent = feed.description;
           li.append(h, p);
           return li;
         });
-
-        ulFeeds.append(...feedEls);
+        ulFeeds.prepend(...feedEls);
         feedsInnerContainer.replaceChildren(ulFeeds);
+
+
 
        
       } else if (value === 'modalWindow') {
@@ -140,17 +147,13 @@ const viewerFn = (initialState) => {
 
         const postData = posts.find((item) => item.id === activePost);
         const modalTitle = document.querySelector('.modal-title');
-        console.log(activePost, "activepost");
         modalTitle.textContent = postData.title;
         const modalBody = document.querySelector('.modal-body');
         modalBody.textContent = postData.description;
         const modalHref = document.querySelector('.full-article');
         modalHref.href = postData.link;
-
-
         
       }
-
 
     } else if (path === 'noRssError') {
         
@@ -161,7 +164,25 @@ const viewerFn = (initialState) => {
     } else if (path === 'networkFail') {
       feedBackMessageParagraph.textContent = '';
       feedBackMessageParagraph.textContent = i18nInstance.t('networkError');
-    }
+    } else if (path.startsWith('uiState')) {
+
+     console.log('state in render', watchedState.uiState.displayed);
+     const coll = watchedState.uiState.displayed;
+     console.log('coll foreach all posts in ui state', coll);
+
+        coll.forEach((post) => {
+
+          if (post.style === "seen") {
+          const id = post.id;
+          const elToSetStyle = document.querySelector(`a[data-id="${id}"]`);
+          console.log(elToSetStyle, 'element to change style')
+          elToSetStyle.classList.remove('fw-bold');
+          elToSetStyle.classList.add('fw-normal');
+          }
+
+        });
+      }
+
 
 });
  

@@ -10,7 +10,7 @@ export default {
       existingRssError: 'RSS уже существует',
       invalidRssError: 'Ссылка должна быть валидным URL',
       noRssError: 'Ресурс не содержит валидный RSS',
-      networkError: 'Проблемы с сетевым запросом',
+      networkError: 'Ошибка сети',
       read: 'Читать полностью',
       close: 'Закрыть',
       see: 'Просмотр',

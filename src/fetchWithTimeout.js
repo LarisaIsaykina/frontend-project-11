@@ -20,21 +20,11 @@ export default (href, viewer) => {
       })
     
       .then((data) => {
-        console.log(data, 'data');
         const { contents } = data;
 
         updateParsing(contents, viewer); // we say about current url with a unique doc
-        console.log('els in then', document.getElementsByClassName('btn-outline-primary'));
 
-        Array.from(document.getElementsByClassName('btn-outline-primary')).forEach((btn) => {
-          btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            watchedState.process = 'modalWindow';
-            watchedState.activePost = bnt.dataset.id;
-
-          })
-        });
-    
+        
     })
     };
   

@@ -31,6 +31,12 @@ const app = () => {
 
     validatedUrls: [],
     newPosts: [],
+
+    uiState: {
+      displayed: [
+        // { postId: id, style: new/ shown }
+      ]
+    }
     
 
   };
@@ -104,29 +110,31 @@ const app = () => {
             watchedState.noRssError.push(i18nInstance.t('noRssError'));
           } else {
 
-            console.log('точка останова в else after first parse');
             const extractedData = parse(contents);
-            const { feed, posts } = extractedData;
+            const { feed, posts1 } = extractedData;
+            const { posts } = watchedState;
             watchedState.feeds.push(feed);
-            watchedState.posts.push(posts);
+            watchedState.posts = [...posts, ...posts1];
+
+            const addToUiState = (post) => {
+              return { 
+                id: post.id,
+                style: 'default',
+              };
+            };
+
+
+            watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
+          
             
             watchedState.process = 'rssLoaded';
+
+            
             watchedState.process = '';
            
           }
         })
-        .then(() => {
-          console.log('els in then', document.getElementsByClassName('btn-outline-primary'));
-
-          Array.from(document.getElementsByClassName('btn-outline-primary')).forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-              e.preventDefault();
-              watchedState.process = 'modalWindow';
-              watchedState.activePost = bnt.dataset.id;
-  
-            })
-          })
-        })
+        
         .then(() => {
           const { validatedUrls } = watchedState;
 
@@ -135,7 +143,46 @@ const app = () => {
           })
         })
 
-      })
+      });
+
+      const postsContainer = document.querySelector('.posts');
+
+      postsContainer.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        const { target } = e;
+        console.log('target', e.target);
+
+        if (target.tagName === 'BUTTON') {
+          console.log('in application add event listener if true',)
+          watchedState.activePost = target.dataset.id;
+          watchedState.process = 'modalWindow';
+          watchedState.process = '';
+
+      
+        }
+      }, true);
+
+      postsContainer.addEventListener('click', (e) => {
+
+        const { target } = e;
+        console.log(target.tagName, 'tagname')
+        console.log('boolean', (target.tagName === 'BUTTON' || target.tagName === 'A'));
+
+        if (target.tagName === 'BUTTON' || target.tagName === 'A') {
+          console.log('click ui state!')
+            const shownPostId = target.dataset.id;
+
+            const shownPostUi = watchedState.uiState.displayed.find((item) => item.id === shownPostId);
+            shownPostUi.style =  'seen';
+
+
+            // console.log('state proxy displayed collection', watchedState.uiState.displayed )
+        }
+      }, true);
+
+
+
 
 };
 

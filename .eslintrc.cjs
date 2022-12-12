@@ -10,6 +10,12 @@ module.exports = {
 
     },
     "rules": {
-    }
+    },
+    "extends": ["airbnb", "airbnb/hooks"],
+    "plugins": [
+        "eslint-plugin",
+        "import",
+    ],
+
     
 }

@@ -34,10 +34,9 @@ const app = () => {
 
     uiState: {
       displayed: [
-        // { postId: id, style: new/ shown }
-      ]
-    }
-    
+      ],
+      submitBlocked: false,
+    },
 
   };
 
@@ -82,28 +81,48 @@ const app = () => {
       
       schema.validate(value)
 
-      .catch((err) => { // ошибка невалидный адрес -> невалидный стиль
-        console.log('err', err);
-        watchedState.validationProcess.error = err.errors;  
-        watchedState.process = 'validationFail';
-        watchedState.process = '';
-      })
-      
+    
       .then((val) => {
         watchedState.validationProcess.data.hrefValue = val;
-        watchedState.validatedUrls.push(val);
-        return fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(val)}`)
 
+        return val;
+      })
+     
+      // .catch((err) => { // ошибка невалидный адрес -> невалидный стиль
+      //   console.log('err', err);
+      //   watchedState.validationProcess.error = err.errors;  
+      //   watchedState.process = 'validationFail';
+      //   watchedState.process = '';
+
+      //   return Promise.reject();
+      // })
+      
+
+      .then((val) => {
+
+        const response = fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(val)}`)
+        watchedState.uiState.submitBlocked = true;
+
+        return response;
       })
 
       .then((response) => {
+        watchedState.validatedUrls.push(watchedState.validationProcess.data.hrefValue);
+
+        watchedState.uiState.submitBlocked = false;
+
   
-        if (response.ok) return response.json();
-        return Promise.reject(response);
+        if (response.ok) {
+
+          return response.json();
+        }
+     
+        throw new Error("Status code error :" + response.status);
+
       })
 
-       
       .then((data) => {
+
         console.log(data, 'data');
         const { contents } = data;
           if (!contents.includes('rss')) {
@@ -111,13 +130,13 @@ const app = () => {
           } else {
 
             const extractedData = parse(contents);
-            const { feed, posts1 } = extractedData;
-            if (_.isEmpty(posts1)) {
+            const { feed, newPosts } = extractedData;
+            if (_.isEmpty(newPosts)) {
               watchedState.noRssError.push(i18nInstance.t('emptyRss'));
             }
             const { posts } = watchedState;
             watchedState.feeds.push(feed);
-            watchedState.posts = [...posts, ...posts1];
+            watchedState.posts = [...posts, ...newPosts];
 
             const addToUiState = (post) => {
               return { 
@@ -126,17 +145,35 @@ const app = () => {
               };
             };
 
-
             watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
-          
-            
-            watchedState.process = 'rssLoaded';
 
-            
-            watchedState.process = '';
-           
           }
         })
+
+          .catch(err =>  {
+            watchedState.uiState.submitBlocked = false;
+
+            if (err.name === 'ValidationError') {
+              watchedState.validationProcess.error = err.errors;  
+              watchedState.process = 'validationFail';
+              watchedState.process = '';
+              throw new Error('validation');
+
+            } else {
+              console.log('error in network catch error', err.name)
+              watchedState.process = 'networkFail';
+              watchedState.process = '';
+              throw new Error('network');
+            }
+    
+          })
+          
+          .then(() => {
+  
+            watchedState.process = 'rssLoaded';
+            watchedState.process = '';
+          })
+               
         
         .then(() => {
           const { validatedUrls } = watchedState;
@@ -161,7 +198,6 @@ const app = () => {
           watchedState.activePost = target.dataset.id;
           watchedState.process = 'modalWindow';
           watchedState.process = '';
-
       
         }
       }, true);
@@ -179,8 +215,6 @@ const app = () => {
             const shownPostUi = watchedState.uiState.displayed.find((item) => item.id === shownPostId);
             shownPostUi.style =  'seen';
 
-
-            // console.log('state proxy displayed collection', watchedState.uiState.displayed )
         }
       }, true);
 

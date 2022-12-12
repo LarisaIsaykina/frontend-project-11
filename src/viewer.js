@@ -12,6 +12,7 @@ const feedBackMessageParagraph = document.querySelector('.feedback');
 const urlInput = document.getElementById('url-input');
 const postsContainer = document.querySelector('.posts');
 const feedsContainer = document.querySelector('.feeds');
+const submitBtn = document.querySelector('button[type="submit"]');
 
 const viewerFn = (initialState) => {
   const i18nInstance = i18n.createInstance();
@@ -55,8 +56,10 @@ const viewerFn = (initialState) => {
         postsInnerContainer.id = 'currentPosts';
 
         const headerFeed = document.createElement('h3');
-        const titleFeed = document.createElement('p');
+        const titleFeed = document.createElement('h3');
+        titleFeed.classList.add('h6', 'm-0');
         const descriptionFeed = document.createElement('p');
+        descriptionFeed.classList.add('m-0', 'small', 'black-text-50')
   
 
         const headerPosts = document.createElement('h3');
@@ -139,8 +142,6 @@ const viewerFn = (initialState) => {
         ulFeeds.prepend(...feedEls);
         feedsInnerContainer.replaceChildren(ulFeeds);
 
-
-
        
       } else if (value === 'modalWindow') {
         const { activePost, posts } = watchedState;
@@ -153,18 +154,18 @@ const viewerFn = (initialState) => {
         const modalHref = document.querySelector('.full-article');
         modalHref.href = postData.link;
         
+      }  else if (value === 'networkFail') {
+        feedBackMessageParagraph.textContent = '';
+        feedBackMessageParagraph.textContent = i18nInstance.t('networkError');
       }
-
     } else if (path === 'noRssError') {
         
         feedBackMessageParagraph.classList.remove('text-success');
         feedBackMessageParagraph.classList.add('text-danger');
         feedBackMessageParagraph.textContent = value[value.length - 1];
 
-    } else if (path === 'networkFail') {
-      feedBackMessageParagraph.textContent = '';
-      feedBackMessageParagraph.textContent = i18nInstance.t('networkError');
-    } else if (path.startsWith('uiState')) {
+    
+    } else if (path.startsWith('uiState.displayed')) {
 
      console.log('state in render', watchedState.uiState.displayed);
      const coll = watchedState.uiState.displayed;
@@ -172,7 +173,7 @@ const viewerFn = (initialState) => {
 
         coll.forEach((post) => {
 
-          if (post.style === "seen") {
+          if (post.style === 'seen') {
           const id = post.id;
           const elToSetStyle = document.querySelector(`a[data-id="${id}"]`);
           console.log(elToSetStyle, 'element to change style')
@@ -181,6 +182,12 @@ const viewerFn = (initialState) => {
           }
 
         });
+      } else if (path === 'uiState.submitBlocked') {
+        if (value === true) {
+          submitBtn.disabled = true;
+        } else {
+          submitBtn.disabled = false;
+        }
       }
 
 

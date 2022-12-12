@@ -10,21 +10,18 @@ export default (href, viewer) => {
         console.log('update working')
   
         if (response.ok) return response.json();
-        return Promise.reject(response);
-      })
-
-      .catch(err => {
-        viewer.process = 'networkFail';
-        viewer.process = '';
-        return Promise.reject(err);
-      })
-    
+        throw new Error(response.status);
+      })    
       .then((data) => {
         const { contents } = data;
 
         updateParsing(contents, viewer); // we say about current url with a unique doc
-
         
+    })
+    .catch(err => {
+      alert('error in update request!')
+      viewer.process = 'networkFail';
+      viewer.process = '';
     })
     };
   

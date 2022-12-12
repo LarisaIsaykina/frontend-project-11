@@ -2,11 +2,7 @@ import _ from 'lodash';
 
 export default (contents) => {
     const domParser = new DOMParser();
-    const dom =  domParser.parseFromString(contents, 'application/xml');
-
-  
-
-    
+    const dom =  domParser.parseFromString(contents, 'application/xml');    
     const data = {
 
       feed: {
@@ -32,7 +28,7 @@ export default (contents) => {
 
     };
     const postsColl = items.map((item) => addPostData(item, currFeedId));
-    data.posts1 = postsColl;
+    data.newPosts = postsColl;
     
     return data;         
 

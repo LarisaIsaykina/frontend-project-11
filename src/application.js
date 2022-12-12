@@ -87,16 +87,6 @@ const app = () => {
 
         return val;
       })
-     
-      // .catch((err) => { // ошибка невалидный адрес -> невалидный стиль
-      //   console.log('err', err);
-      //   watchedState.validationProcess.error = err.errors;  
-      //   watchedState.process = 'validationFail';
-      //   watchedState.process = '';
-
-      //   return Promise.reject();
-      // })
-      
 
       .then((val) => {
 
@@ -125,29 +115,29 @@ const app = () => {
 
         console.log(data, 'data');
         const { contents } = data;
-          if (!contents.includes('rss')) {
+          
+          const extractedData = parse(contents);
+          if (extractedData === 'parseerror') {
             watchedState.noRssError.push(i18nInstance.t('noRssError'));
-          } else {
-
-            const extractedData = parse(contents);
-            const { feed, newPosts } = extractedData;
-            if (_.isEmpty(newPosts)) {
+          } else if (extractedData === 'emptyRss') {
               watchedState.noRssError.push(i18nInstance.t('emptyRss'));
-            }
-            const { posts } = watchedState;
-            watchedState.feeds.push(feed);
-            watchedState.posts = [...posts, ...newPosts];
-
-            const addToUiState = (post) => {
-              return { 
-                id: post.id,
-                style: 'default',
-              };
-            };
-
-            watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
-
           }
+
+          const { feed, newPosts } = extractedData;
+            
+          const { posts } = watchedState;
+          watchedState.feeds.push(feed);
+          watchedState.posts = [...posts, ...newPosts];
+
+          const addToUiState = (post) => {
+            return { 
+              id: post.id,
+              style: 'default',
+            };
+          };
+
+          watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
+          })
         })
 
           .catch(err =>  {

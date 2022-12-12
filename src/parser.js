@@ -2,7 +2,17 @@ import _ from 'lodash';
 
 export default (contents) => {
     const domParser = new DOMParser();
-    const dom =  domParser.parseFromString(contents, 'application/xml');    
+    const dom =  domParser.parseFromString(contents, 'application/xml'); 
+    if (dom.contains('parseerror')) {
+      return 'parseerror';
+    }   
+
+    const items = Array.from(dom.querySelectorAll('item')); // find all els = posts from parsed
+
+    if (items.length === 0) {
+      return 'emptyRss';
+    }
+    
     const data = {
 
       feed: {
@@ -14,8 +24,8 @@ export default (contents) => {
     };
   
     const currFeedId = data.feed.id;
-  
-    const items = Array.from(dom.querySelectorAll('item')); // find all els = posts from parsed
+      
+
 
     const addPostData = (postEl, feedId) => {
        return {

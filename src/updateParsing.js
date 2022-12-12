@@ -3,6 +3,9 @@ import _ from "lodash";
 export default (contents, viewer) => { // контент с конкретной ссылки
     const domParser = new DOMParser();
     const dom =  domParser.parseFromString(contents, 'application/xml'); // новый документ
+    if (dom.contains('parseerror')) {
+      return 'parseerror';
+    }
     const titleFeed = dom.querySelector('title').textContent; // заголовок фида по данной ссылке
 
     console.log('dom in update parsing', dom);

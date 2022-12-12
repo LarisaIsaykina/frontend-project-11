@@ -11,7 +11,7 @@ module.exports = {
     },
     "rules": {
     },
-    "extends": ["airbnb", "airbnb/hooks"],
+    "extends": ["config-airbnb-base"],
     "plugins": [
         "eslint-plugin",
         "import",

@@ -3,16 +3,24 @@ import _ from 'lodash';
 export default (contents) => {
     const domParser = new DOMParser();
     const dom =  domParser.parseFromString(contents, 'application/xml'); 
-    if (dom.contains('parseerror')) {
-      return 'parseerror';
-    }   
+    console.log('точка останова в beginnin parser');
+    const parsererrors = Array.from(dom.getElementsByTagName('parsererror'));
 
     const items = Array.from(dom.querySelectorAll('item')); // find all els = posts from parsed
+    console.log(items);
 
-    if (items.length === 0) {
+    console.log('dom contains parseerror', parsererrors.length);
+
+    if (parsererrors.length !== 0) {
+      console.log('return parseerror');
+      return 'parseerror';
+    }   else if (items.length === 0) {
+      console.log('return empty');
+
       return 'emptyRss';
-    }
-    
+    } else {
+      console.log('else in parser')
+
     const data = {
 
       feed: {
@@ -39,8 +47,10 @@ export default (contents) => {
     };
     const postsColl = items.map((item) => addPostData(item, currFeedId));
     data.newPosts = postsColl;
+    console.log('точка остановка в конце parser.js')
     
-    return data;         
+    return data;    
+  }     
 
 
 };

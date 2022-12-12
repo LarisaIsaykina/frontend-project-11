@@ -19,7 +19,7 @@ export default (href, viewer) => {
         
     })
     .catch(err => {
-      alert('error in update request!')
+      alert(err.message);
       viewer.process = 'networkFail';
       viewer.process = '';
     })

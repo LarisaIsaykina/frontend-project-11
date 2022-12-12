@@ -3,9 +3,7 @@ import _ from "lodash";
 export default (contents, viewer) => { // контент с конкретной ссылки
     const domParser = new DOMParser();
     const dom =  domParser.parseFromString(contents, 'application/xml'); // новый документ
-    if (dom.contains('parseerror')) {
-      return 'parseerror';
-    }
+
     const titleFeed = dom.querySelector('title').textContent; // заголовок фида по данной ссылке
 
     console.log('dom in update parsing', dom);
@@ -50,7 +48,6 @@ export default (contents, viewer) => { // контент с конкретной
       newPosts.push(newItem);
 
       viewer.posts.push(newItem);
-      // viewer.uiState.lists.push({ id: newItem.id, style: unshown });
     };
   
     items.forEach((item) => {

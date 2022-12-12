@@ -97,12 +97,15 @@ const app = () => {
       })
 
       .then((response) => {
+
+        console.log('in then');
         watchedState.validatedUrls.push(watchedState.validationProcess.data.hrefValue);
 
         watchedState.uiState.submitBlocked = false;
 
   
         if (response.ok) {
+          console.log('response ok', (response.ok) )
 
           return response.json();
         }
@@ -112,16 +115,21 @@ const app = () => {
       })
 
       .then((data) => {
+        console.log('after response json returned data', data)
 
-        console.log(data, 'data');
         const { contents } = data;
+        console.log('cintents', contents);
           
           const extractedData = parse(contents);
+          console.log('extracted data', extractedData);
           if (extractedData === 'parseerror') {
-            watchedState.noRssError.push(i18nInstance.t('noRssError'));
+            console.log('state in app', watchedState.noRssError);
+            throw new Error('noRSS');
           } else if (extractedData === 'emptyRss') {
-              watchedState.noRssError.push(i18nInstance.t('emptyRss'));
-          }
+              throw new Error('emptyRSS');
+
+          } else {
+            console.log('in else')
 
           const { feed, newPosts } = extractedData;
             
@@ -137,7 +145,7 @@ const app = () => {
           };
 
           watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
-          })
+          }
         })
 
           .catch(err =>  {
@@ -149,7 +157,18 @@ const app = () => {
               watchedState.process = '';
               throw new Error('validation');
 
-            } else {
+            } else if(err.message === 'noRSS') {
+              watchedState.noRssError.push(i18nInstance.t('noRssError'));
+              throw new Error();
+
+
+            } else if (err.message === 'emptyRSS') {
+              watchedState.noRssError.push(i18nInstance.t('emptyRss'));
+              throw new Error();
+
+            }
+            
+            else {
               console.log('error in network catch error', err.name)
               watchedState.process = 'networkFail';
               watchedState.process = '';
@@ -171,9 +190,10 @@ const app = () => {
           validatedUrls.forEach((url) => {
             fetchWithTimeout(url, watchedState);
           })
-        })
+        });
 
       });
+
 
       const postsContainer = document.querySelector('.posts');
 

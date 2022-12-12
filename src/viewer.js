@@ -158,7 +158,8 @@ const viewerFn = (initialState) => {
         feedBackMessageParagraph.textContent = '';
         feedBackMessageParagraph.textContent = i18nInstance.t('networkError');
       }
-    } else if (path === 'noRssError') {
+    } else if (path.startsWith('noRssError')) {
+      console.log('goes into render no rss')
         
         feedBackMessageParagraph.classList.remove('text-success');
         feedBackMessageParagraph.classList.add('text-danger');

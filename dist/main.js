@@ -274,7 +274,7 @@
         }, e.attributes.popper = { ...e.attributes.popper, 'data-popper-reference-hidden': u, 'data-popper-escaped': h };
       },
     }; const wt = {
-      name: 'offset', enabled: !0, phase: 'main', requires: ['popperOffsets'], fn(t) { const n = t.state; const r = t.options; const o = t.name; const a = r.offset; const l = void 0 === a ? [0, 0] : a; const c = g.reduce(((t, r) => (t[r] = (function (t, n, r) { const o = S(t); const a = [s, e].indexOf(o) >= 0 ? -1 : 1; const l = 'function' === typeof r ? r({ ...n, placement: t }) : r; let c = l[0]; let u = l[1]; return c = c || 0, u = (u || 0) * a, [s, i].indexOf(o) >= 0 ? { x: u, y: c } : { x: c, y: u }; }(r, n.rects, l)), t)), {}); const u = c[n.placement]; const h = u.x; const f = u.y; n.modifiersData.popperOffsets != null && (n.modifiersData.popperOffsets.x += h, n.modifiersData.popperOffsets.y += f), n.modifiersData[o] = c; },
+      name: 'offset', enabled: !0, phase: 'main', requires: ['popperOffsets'], fn(t) { const n = t.state; const r = t.options; const o = t.name; const a = r.offset; const l = void 0 === a ? [0, 0] : a; const c = g.reduce(((t, r) => (t[r] = (function (t, n, r) { const o = S(t); const a = [s, e].indexOf(o) >= 0 ? -1 : 1; const l = typeof r === 'function' ? r({ ...n, placement: t }) : r; let c = l[0]; let u = l[1]; return c = c || 0, u = (u || 0) * a, [s, i].indexOf(o) >= 0 ? { x: u, y: c } : { x: c, y: u }; }(r, n.rects, l)), t)), {}); const u = c[n.placement]; const h = u.x; const f = u.y; n.modifiersData.popperOffsets != null && (n.modifiersData.popperOffsets.x += h, n.modifiersData.popperOffsets.y += f), n.modifiersData[o] = c; },
     }; const xt = {
       name: 'popperOffsets',
       enabled: !0,

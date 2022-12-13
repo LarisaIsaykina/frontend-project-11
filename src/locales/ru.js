@@ -2,7 +2,7 @@ export default {
   translation: {
     header1: 'RSS агрегатор',
     header2: 'Начните читать RSS сегодня! Это легко, это красиво.',
-    urlExample: 'Пример: https://ru.hexlet.io/lessons.rss',
+    urlExample: 'Пример: https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
     btnSubmit: 'Добавить',
     inputLabel: 'Ссылка RSS',
     successMessage: 'RSS успешно загружен',

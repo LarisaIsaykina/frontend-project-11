@@ -1,5 +1,5 @@
 import onChange from 'on-change';
-import ru from '../locales/ru.js'
+import ru from './locales/ru.js'
 import i18n from 'i18next';
 import { setLocale } from 'yup';
 import _ from 'lodash';

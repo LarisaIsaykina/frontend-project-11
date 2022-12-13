@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 import { setLocale } from 'yup';
 import viewerFn from './viewer.js'
-import ru from '../locales/ru.js'
+import ru from './locales/ru.js'
 import i18n from 'i18next';
 import parse from './parser.js';
 import _ from 'lodash';

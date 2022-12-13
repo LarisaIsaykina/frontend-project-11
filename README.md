@@ -4,3 +4,6 @@
 [![Node CI](https://github.com/LarisaIsaykina/frontend-project-11/actions/workflows/nodejs.yml/badge.svg)](https://github.com/LarisaIsaykina/frontend-project-11/actions/workflows/nodejs.yml)
 
 This is a student project I am currenty working on.
+
+The 'RSS-aggregator' is an application providing the RSS-news updating every 5000 msec. The user should input a valid URL containing both RSS and news (posts).
+Previewing the posts via modal window is available.

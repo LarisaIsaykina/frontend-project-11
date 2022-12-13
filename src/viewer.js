@@ -1,11 +1,7 @@
 import onChange from 'on-change';
-import ru from './locales/ru.js'
 import i18n from 'i18next';
-import { setLocale } from 'yup';
-import _ from 'lodash';
+import ru from './locales/ru.js';
 import 'bootstrap';
-
-
 
 const form = document.querySelector('.rss-form');
 const feedBackMessageParagraph = document.querySelector('.feedback');
@@ -14,9 +10,9 @@ const postsContainer = document.querySelector('.posts');
 const feedsContainer = document.querySelector('.feeds');
 const submitBtn = document.querySelector('button[type="submit"]');
 
-const viewerFn = (initialState) => {
+const launchViewer = (initialState) => {
   const i18nInstance = i18n.createInstance();
-  
+
   i18nInstance.init({
     lng: 'ru',
     debug: true,
@@ -25,17 +21,14 @@ const viewerFn = (initialState) => {
     },
   });
 
-    
-  const watchedState = onChange(initialState, (path, value, previous) => {
+  const watchedState = onChange(initialState, (path, value) => {
     if (path === 'process') {
-           
       if (value === 'validationFail') {
-          urlInput.classList.add('is-invalid');
-          feedBackMessageParagraph.textContent = '';
-          feedBackMessageParagraph.classList.remove('text-success');
-          feedBackMessageParagraph.classList.add('text-danger');
-          feedBackMessageParagraph.textContent = watchedState.validationProcess.error;
-  
+        urlInput.classList.add('is-invalid');
+        feedBackMessageParagraph.textContent = '';
+        feedBackMessageParagraph.classList.remove('text-success');
+        feedBackMessageParagraph.classList.add('text-danger');
+        feedBackMessageParagraph.textContent = watchedState.validationProcess.error;
       } else if (value === 'rssLoaded' || value === 'rssUpdated') {
         feedBackMessageParagraph.textContent = '';
 
@@ -59,14 +52,12 @@ const viewerFn = (initialState) => {
         const titleFeed = document.createElement('h3');
         titleFeed.classList.add('h6', 'm-0');
         const descriptionFeed = document.createElement('p');
-        descriptionFeed.classList.add('m-0', 'small', 'black-text-50')
-  
+        descriptionFeed.classList.add('m-0', 'small', 'black-text-50');
 
         const headerPosts = document.createElement('h3');
         const ulFeeds = document.createElement('ul');
         ulFeeds.classList.add('list-group', 'border-0');
         ulFeeds.id = 'ulFeeds';
-
 
         const ulPosts = document.createElement('ul');
         ulPosts.classList.add('list-group', 'border-0');
@@ -76,12 +67,11 @@ const viewerFn = (initialState) => {
         feedsInnerContainer.append(ulFeeds);
 
         headerPosts.textContent = 'Posts';
-       
+
         headerFeed.textContent = 'Feeds';
         const { feeds, posts } = watchedState;
         const currFeed = feeds[feeds.length - 1];
         const { title, id, description } = currFeed;
-
 
         titleFeed.textContent = title;
         descriptionFeed.textContent = description;
@@ -92,7 +82,6 @@ const viewerFn = (initialState) => {
 
         const currPosts = posts.filter((post) => post.fId === id);
 
-       
         const postsUiState = watchedState.uiState.displayed;
 
         const postEls = currPosts.map((post) => {
@@ -117,14 +106,13 @@ const viewerFn = (initialState) => {
           btn.setAttribute('type', 'button');
           btn.setAttribute('data-id', post.id);
 
-          btn.setAttribute('data-bs-toggle', "modal");
-          btn.setAttribute('data-bs-target', "#modal");
+          btn.setAttribute('data-bs-toggle', 'modal');
+          btn.setAttribute('data-bs-target', '#modal');
 
-          btn.textContent =  i18nInstance.t('see');        
+          btn.textContent = i18nInstance.t('see');
           li.appendChild(btn);
           return li;
         });
-
 
         ulPosts.append(...postEls);
         postsInnerContainer.replaceChildren(ulPosts);
@@ -141,8 +129,6 @@ const viewerFn = (initialState) => {
         });
         ulFeeds.prepend(...feedEls);
         feedsInnerContainer.replaceChildren(ulFeeds);
-
-       
       } else if (value === 'modalWindow') {
         const { activePost, posts } = watchedState;
 
@@ -153,47 +139,39 @@ const viewerFn = (initialState) => {
         modalBody.textContent = postData.description;
         const modalHref = document.querySelector('.full-article');
         modalHref.href = postData.link;
-        
-      }  else if (value === 'networkFail') {
+      } else if (value === 'networkFail') {
         feedBackMessageParagraph.textContent = '';
         feedBackMessageParagraph.textContent = i18nInstance.t('networkError');
       }
     } else if (path.startsWith('noRssError')) {
-      console.log('goes into render no rss')
-        
-        feedBackMessageParagraph.classList.remove('text-success');
-        feedBackMessageParagraph.classList.add('text-danger');
-        feedBackMessageParagraph.textContent = value[value.length - 1];
+      console.log('goes into render no rss');
 
-    
+      feedBackMessageParagraph.classList.remove('text-success');
+      feedBackMessageParagraph.classList.add('text-danger');
+      feedBackMessageParagraph.textContent = value[value.length - 1];
     } else if (path.startsWith('uiState.displayed')) {
+      console.log('state in render', watchedState.uiState.displayed);
+      const coll = watchedState.uiState.displayed;
+      console.log('coll foreach all posts in ui state', coll);
 
-     console.log('state in render', watchedState.uiState.displayed);
-     const coll = watchedState.uiState.displayed;
-     console.log('coll foreach all posts in ui state', coll);
-
-        coll.forEach((post) => {
-
-          if (post.style === 'seen') {
-          const id = post.id;
+      coll.forEach((post) => {
+        if (post.style === 'seen') {
+          const { id } = post;
           const elToSetStyle = document.querySelector(`a[data-id="${id}"]`);
-          console.log(elToSetStyle, 'element to change style')
+          console.log(elToSetStyle, 'element to change style');
           elToSetStyle.classList.remove('fw-bold');
           elToSetStyle.classList.add('fw-normal');
-          }
-
-        });
-      } else if (path === 'uiState.submitBlocked') {
-        if (value === true) {
-          submitBtn.disabled = true;
-        } else {
-          submitBtn.disabled = false;
         }
+      });
+    } else if (path === 'uiState.submitBlocked') {
+      if (value === true) {
+        submitBtn.disabled = true;
+      } else {
+        submitBtn.disabled = false;
       }
+    }
+  });
 
-
-});
- 
-    return watchedState;
-  }
-  export default viewerFn;
+  return watchedState;
+};
+export default launchViewer;

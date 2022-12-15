@@ -1,14 +1,17 @@
 import onChange from 'on-change';
+
 import i18n from 'i18next';
 import ru from './locales/ru.js';
 import 'bootstrap';
 
-const form = document.querySelector('.rss-form');
-const feedBackMessageParagraph = document.querySelector('.feedback');
-const urlInput = document.getElementById('url-input');
-const postsContainer = document.querySelector('.posts');
-const feedsContainer = document.querySelector('.feeds');
-const submitBtn = document.querySelector('button[type="submit"]');
+const elements = {
+  form: document.querySelector('.rss-form'),
+  feedBackMessageParagraph: document.querySelector('.feedback'),
+  urlInput: document.getElementById('url-input'),
+  postsContainer: document.querySelector('.posts'),
+  feedsContainer: document.querySelector('.feeds'),
+  submitBtn: document.querySelector('button[type="submit"]'),
+};
 
 const launchViewer = (initialState) => {
   const i18nInstance = i18n.createInstance();
@@ -21,27 +24,34 @@ const launchViewer = (initialState) => {
     },
   });
 
+  document.querySelector('h1').textContent = i18nInstance.t('header1');
+  document.querySelector('.lead').textContent = i18nInstance.t('header2');
+  // document.querySelector('.text-muted').textContent = i18nInstance.t('urlExample');
+  document.querySelector('button[type="submit"]').textContent = i18nInstance.t('btnSubmit');
+  console.log('ищем кнопку submit', document.querySelector('button[type="submit"]'));
+  document.querySelector('label[for="url-input"]').textContent = i18nInstance.t('inputLabel');
+
   const watchedState = onChange(initialState, (path, value) => {
     if (path === 'process') {
       if (value === 'validationFail') {
-        urlInput.classList.add('is-invalid');
-        feedBackMessageParagraph.textContent = '';
-        feedBackMessageParagraph.classList.remove('text-success');
-        feedBackMessageParagraph.classList.add('text-danger');
-        feedBackMessageParagraph.textContent = watchedState.validationProcess.error;
+        elements.urlInput.classList.add('is-invalid');
+        elements.feedBackMessageParagraph.textContent = '';
+        elements.feedBackMessageParagraph.classList.remove('text-success');
+        elements.feedBackMessageParagraph.classList.add('text-danger');
+        elements.feedBackMessageParagraph.textContent = watchedState.validationProcess.error;
       } else if (value === 'rssLoaded' || value === 'rssUpdated') {
-        feedBackMessageParagraph.textContent = '';
+        elements.feedBackMessageParagraph.textContent = '';
 
-        urlInput.classList.remove('is-invalid');
-        feedBackMessageParagraph.classList.remove('text-danger');
-        feedBackMessageParagraph.classList.add('text-success');
-        feedBackMessageParagraph.textContent = i18nInstance.t('successMessage');
-        urlInput.value = '';
+        elements.urlInput.classList.remove('is-invalid');
+        elements.feedBackMessageParagraph.classList.remove('text-danger');
+        elements.feedBackMessageParagraph.classList.add('text-success');
+        elements.feedBackMessageParagraph.textContent = i18nInstance.t('successMessage');
+        elements.urlInput.value = '';
 
-        form.focus();
+        elements.form.focus();
 
-        postsContainer.innerHTML = '';
-        feedsContainer.innerHTML = '';
+        elements.postsContainer.innerHTML = '';
+        elements.feedsContainer.innerHTML = '';
 
         const feedsInnerContainer = document.createElement('div');
         feedsInnerContainer.id = 'currentFeed';
@@ -77,8 +87,8 @@ const launchViewer = (initialState) => {
         descriptionFeed.textContent = description;
         feedsInnerContainer.append(ulFeeds);
 
-        feedsContainer.append(headerFeed, feedsInnerContainer);
-        postsContainer.append(headerPosts, postsInnerContainer);
+        elements.feedsContainer.append(headerFeed, feedsInnerContainer);
+        elements.postsContainer.append(headerPosts, postsInnerContainer);
 
         const currPosts = posts.filter((post) => post.fId === id);
 
@@ -140,15 +150,18 @@ const launchViewer = (initialState) => {
         const modalHref = document.querySelector('.full-article');
         modalHref.href = postData.link;
       } else if (value === 'networkFail') {
-        feedBackMessageParagraph.textContent = '';
-        feedBackMessageParagraph.textContent = i18nInstance.t('networkError');
+        elements.feedBackMessageParagraph.textContent = '';
+        elements.feedBackMessageParagraph.textContent = i18nInstance.t('networkError');
       }
     } else if (path.startsWith('noRssError')) {
-      console.log('goes into render no rss');
+      const currentError = value[value.length - 1].message;
+      console.log('current error', currentError);
 
-      feedBackMessageParagraph.classList.remove('text-success');
-      feedBackMessageParagraph.classList.add('text-danger');
-      feedBackMessageParagraph.textContent = value[value.length - 1];
+      const textError = (currentError === 'parseerror') ? i18nInstance.t('noRssError') : i18nInstance.t('emptyRss');
+
+      elements.feedBackMessageParagraph.classList.remove('text-success');
+      elements.feedBackMessageParagraph.classList.add('text-danger');
+      elements.feedBackMessageParagraph.textContent = textError;
     } else if (path.startsWith('uiState.displayed')) {
       console.log('state in render', watchedState.uiState.displayed);
       const coll = watchedState.uiState.displayed;
@@ -165,13 +178,13 @@ const launchViewer = (initialState) => {
       });
     } else if (path === 'uiState.submitBlocked') {
       if (value === true) {
-        submitBtn.disabled = true;
+        elements.submitBtn.disabled = true;
       } else {
-        submitBtn.disabled = false;
+        elements.submitBtn.disabled = false;
       }
     }
   });
 
   return watchedState;
 };
-export default launchViewer;
+export { elements, launchViewer };

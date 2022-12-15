@@ -1,10 +1,12 @@
-import * as yup from 'yup';
-import { setLocale } from 'yup';
 import i18n from 'i18next';
-import launchViewer from './viewer.js';
+import axios from 'axios';
+import _ from 'lodash';
+import validate from './validation.js';
+import { launchViewer, elements } from './viewer.js';
 import ru from './locales/ru.js';
 import parse from './parser.js';
 import fetchWithTimeout from './fetchWithTimeout.js';
+
 import 'bootstrap';
 
 const app = () => {
@@ -46,161 +48,103 @@ const app = () => {
     resources: {
       ru,
     },
-  }).then(() => {
-    document.querySelector('h1').textContent = i18nInstance.t('header1');
-    document.querySelector('.lead').textContent = i18nInstance.t('header2');
-    document.querySelector('.text-muted').textContent = i18nInstance.t('urlExample');
-    document.querySelector('button[type="submit"]').textContent = i18nInstance.t('btnSubmit');
-    document.querySelector('label[for="url-input"]').textContent = i18nInstance.t('inputLabel');
-  });
+  })
+    .then(() => {
+      const watchedState = launchViewer(initialState);
 
-  const watchedState = launchViewer(initialState);
+      elements.form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const value = formData.get('url');
 
-  const form = document.querySelector('.rss-form');
+        validate(watchedState, value)
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const value = formData.get('url');
-    const existingReferences = watchedState.validatedUrls;
+          .then((val) => {
+            watchedState.validationProcess.data.hrefValue = val;
+            watchedState.uiState.submitBlocked = true;
 
-    setLocale({
-      mixed: {
-        notOneOf: i18nInstance.t('existingRssError'),
-      },
-      string: {
-        url: i18nInstance.t('invalidRssError'),
-      },
-    });
+            return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(val)}`);
+          })
 
-    const schema = yup.string().url().notOneOf(existingReferences);
+          .then((response) => {
+            console.log('data', response);
+            watchedState.uiState.submitBlocked = false;
 
-    schema.validate(value)
+            const { contents } = response.data;
 
-      .then((val) => {
-        watchedState.validationProcess.data.hrefValue = val;
+            if (_.isEmpty(parse(contents, watchedState))) {
+              Promise.reject(response);
+            } const extractedData = parse(contents, watchedState);
 
-        return val;
-      })
+            console.log('data from parse with error', extractedData);
 
-      .then((val) => {
-        const response = fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(val)}`);
-        watchedState.uiState.submitBlocked = true;
+            const { feed, newPosts } = extractedData;
 
-        return response;
-      })
+            const { posts } = watchedState;
+            watchedState.feeds.push(feed);
+            watchedState.posts = [...posts, ...newPosts];
 
-      .then((response) => {
-        console.log('in then');
-        watchedState.validatedUrls.push(watchedState.validationProcess.data.hrefValue);
+            const addToUiState = (post) => ({
+              id: post.id,
+              style: 'default',
+            });
+            watchedState.validatedUrls.push(watchedState.validationProcess.data.hrefValue);
 
-        watchedState.uiState.submitBlocked = false;
+            watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
+          })
 
-        if (response.ok) {
-          console.log('response ok', (response.ok));
+          .catch((err) => {
+            watchedState.uiState.submitBlocked = false;
 
-          return response.json();
-        }
+            if (err.name === 'ValidationError') {
+              watchedState.validationProcess.error = err.errors;
+              watchedState.process = 'validationFail';
+              watchedState.process = '';
+              throw new Error('validation');
+            } else {
+              watchedState.process = 'networkFail';
+              watchedState.process = '';
+              throw new Error('network');
+            }
+          })
 
-        throw new Error(`Status code error :${response.status}`);
-      })
+          .then(() => {
+            watchedState.process = 'rssLoaded';
+            watchedState.process = '';
+            const { validatedUrls } = watchedState;
+            console.log('then after error handling');
 
-      .then((data) => {
-        console.log('after response json returned data', data);
-
-        const { contents } = data;
-        console.log('cintents', contents);
-
-        const extractedData = parse(contents);
-        console.log('extracted data', extractedData);
-        if (extractedData === 'parseerror') {
-          console.log('state in app', watchedState.noRssError);
-          throw new Error('noRSS');
-        } else if (extractedData === 'emptyRss') {
-          throw new Error('emptyRSS');
-        } else {
-          console.log('in else');
-
-          const { feed, newPosts } = extractedData;
-
-          const { posts } = watchedState;
-          watchedState.feeds.push(feed);
-          watchedState.posts = [...posts, ...newPosts];
-
-          const addToUiState = (post) => ({
-            id: post.id,
-            style: 'default',
+            validatedUrls.forEach((url) => {
+              fetchWithTimeout(url, watchedState);
+            });
           });
-
-          watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
-        }
-      })
-
-      .catch((err) => {
-        watchedState.uiState.submitBlocked = false;
-
-        if (err.name === 'ValidationError') {
-          watchedState.validationProcess.error = err.errors;
-          watchedState.process = 'validationFail';
-          watchedState.process = '';
-          throw new Error('validation');
-        } else if (err.message === 'noRSS') {
-          watchedState.noRssError.push(i18nInstance.t('noRssError'));
-          throw new Error();
-        } else if (err.message === 'emptyRSS') {
-          watchedState.noRssError.push(i18nInstance.t('emptyRss'));
-          throw new Error();
-        } else {
-          console.log('error in network catch error', err.name);
-          watchedState.process = 'networkFail';
-          watchedState.process = '';
-          throw new Error('network');
-        }
-      })
-
-      .then(() => {
-        watchedState.process = 'rssLoaded';
-        watchedState.process = '';
-      })
-
-      .then(() => {
-        const { validatedUrls } = watchedState;
-
-        validatedUrls.forEach((url) => {
-          fetchWithTimeout(url, watchedState);
-        });
       });
-  });
 
-  const postsContainer = document.querySelector('.posts');
+      elements.postsContainer.addEventListener('click', (e) => {
+        e.preventDefault();
 
-  postsContainer.addEventListener('click', (e) => {
-    e.preventDefault();
+        const { target } = e;
 
-    const { target } = e;
-    console.log('target', e.target);
+        if (target.tagName === 'BUTTON') {
+          watchedState.activePost = target.dataset.id;
+          watchedState.process = 'modalWindow';
+          watchedState.process = '';
+        }
+      }, true);
 
-    if (target.tagName === 'BUTTON') {
-      console.log('in application add event listener if true');
-      watchedState.activePost = target.dataset.id;
-      watchedState.process = 'modalWindow';
-      watchedState.process = '';
-    }
-  }, true);
+      elements.postsContainer.addEventListener('click', (e) => {
+        const { target } = e;
 
-  postsContainer.addEventListener('click', (e) => {
-    const { target } = e;
-    console.log(target.tagName, 'tagname');
-    console.log('boolean', (target.tagName === 'BUTTON' || target.tagName === 'A'));
+        if (target.tagName === 'BUTTON' || target.tagName === 'A') {
+          console.log('click ui state!');
+          const shownPostId = target.dataset.id;
+          const { displayed } = watchedState.uiState;
 
-    if (target.tagName === 'BUTTON' || target.tagName === 'A') {
-      console.log('click ui state!');
-      const shownPostId = target.dataset.id;
-
-      const shownPostUi = watchedState.uiState.displayed.find((item) => item.id === shownPostId);
-      shownPostUi.style = 'seen';
-    }
-  }, true);
+          const shownPostUi = displayed.find((item) => item.id === shownPostId);
+          shownPostUi.style = 'seen';
+        }
+      }, true);
+    });
 };
 
 export default app;

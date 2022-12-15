@@ -1,17 +1,14 @@
+import axios from 'axios';
 import updateParsing from './updateParsing.js';
 
 export default (href, viewer) => {
   const fetchData = () => {
-    fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(href)}`)
+    console.log('before get request');
+    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(href)}`)
 
       .then((response) => {
-        console.log('update working');
-
-        if (response.ok) return response.json();
-        throw new Error(response.status);
-      })
-      .then((data) => {
-        const { contents } = data;
+        console.log('response', response);
+        const { contents } = response.data;
 
         updateParsing(contents, viewer); // we say about current url with a unique doc
       })

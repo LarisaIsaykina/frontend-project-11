@@ -6,19 +6,11 @@ export default (contents, viewer) => { // контент с конкретной
 
   const titleFeed = dom.querySelector('title').textContent;
 
-  console.log('dom in update parsing', dom);
-
   const items = Array.from(dom.querySelectorAll('item'));
 
   const { feeds, posts } = viewer;
 
-  console.log('feeds in update parsing', feeds);
-
-  console.log('viewer in update parsing', viewer);
-
   const currFeed = feeds.find((item) => item.title === titleFeed);
-
-  console.log('curr feed in update parsing', currFeed);
 
   const currFeedId = currFeed.id;
 

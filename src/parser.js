@@ -1,26 +1,38 @@
 import _ from 'lodash';
 
-export default (contents) => {
+export default (contents, viewer) => {
   const domParser = new DOMParser();
   const dom = domParser.parseFromString(contents, 'application/xml');
-  console.log('точка останова в beginnin parser');
-  const parsererrors = Array.from(dom.getElementsByTagName('parsererror'));
+  console.log('dom', dom);
+  console.log('parseerror', dom.getElementsByTagName('parsererror'));
 
-  const items = Array.from(dom.querySelectorAll('item')); // find all els = posts from parsed
-  console.log(items);
-
-  console.log('dom contains parseerror', parsererrors.length);
-
-  if (parsererrors.length !== 0) {
-    console.log('return parseerror');
-    return 'parseerror';
-  } if (items.length === 0) {
-    console.log('return empty');
-
-    return 'emptyRss';
+  try {
+    const parseerror = dom.getElementsByTagName('parsererror');
+    if (parseerror.length !== 0) {
+      console.log(('parseerorro!'));
+      throw new Error('parseerror');
+    }
+  } catch (err) {
+    console.log('handling error in parseerror', err);
+    viewer.noRssError.push(err);
+    return;
   }
-  console.log('else in parser');
 
+  try {
+    const itemEls = dom.querySelectorAll('item');
+    if (itemEls.length === 0) {
+      console.log(('empty rss!'));
+
+      throw new Error('emptyRss');
+    }
+  } catch (err) {
+    viewer.noRssError.push(err);
+    return;
+  }
+
+  console.log('после блока try catch');
+
+  const items = Array.from(dom.querySelectorAll('item'));
   const data = {
 
     feed: {
@@ -42,7 +54,6 @@ export default (contents) => {
   });
   const postsColl = items.map((item) => addPostData(item, currFeedId));
   data.newPosts = postsColl;
-  console.log('точка остановка в конце parser.js');
 
   return data;
 };

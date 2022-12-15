@@ -3,10 +3,10 @@ import * as yup from 'yup';
 export default (viewer, value) => {
   yup.setLocale({
     mixed: {
-      notOneOf: 'existing',
+      notOneOf: 'existingRssError',
     },
     string: {
-      url: 'invalid',
+      url: 'invalidRssError',
     },
   });
 

@@ -12,9 +12,9 @@ export default (href, viewer) => {
 
         updateParsing(contents, viewer); // we say about current url with a unique doc
       })
-      .catch(() => {
-        viewer.process = 'networkFail';
-        viewer.process = '';
+      .catch((err) => {
+        console.log('err message');
+        viewer.postValidationErrors.push(err.message);
       });
   };
 

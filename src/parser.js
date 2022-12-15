@@ -1,33 +1,23 @@
 import _ from 'lodash';
 
-export default (contents, viewer) => {
+export default (contents) => {
   const domParser = new DOMParser();
   const dom = domParser.parseFromString(contents, 'application/xml');
   console.log('dom', dom);
-  console.log('parseerror', dom.getElementsByTagName('parsererror'));
 
-  try {
-    const parseerror = dom.getElementsByTagName('parsererror');
-    if (parseerror.length !== 0) {
-      console.log(('parseerorro!'));
-      throw new Error('parseerror');
-    }
-  } catch (err) {
-    console.log('handling error in parseerror', err);
-    viewer.noRssError.push(err);
-    return;
+  const parseerror = dom.querySelector('parsererror');
+  console.log('parseerr el', parseerror);
+
+  if (parseerror) {
+    console.log(('parseerorro!'));
+    throw new Error('parseerror');
   }
 
-  try {
-    const itemEls = dom.querySelectorAll('item');
-    if (itemEls.length === 0) {
-      console.log(('empty rss!'));
+  const itemEls = dom.querySelectorAll('item');
+  if (itemEls.length === 0) {
+    console.log(('empty rss!'));
 
-      throw new Error('emptyRss');
-    }
-  } catch (err) {
-    viewer.noRssError.push(err);
-    return;
+    throw new Error('emptyRss');
   }
 
   console.log('после блока try catch');

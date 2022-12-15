@@ -24,7 +24,7 @@ const app = () => {
       error: '',
     },
 
-    noRssError: [],
+    postValidationErrors: [],
     feeds: [],
 
     posts: [],
@@ -48,103 +48,100 @@ const app = () => {
     resources: {
       ru,
     },
-  })
-    .then(() => {
-      const watchedState = launchViewer(initialState);
+  });
+  // const errorCodes = {
+  //   network: i18nInstance.t('networkError'),
+  //   validation: i18nInstance.t('invalidRssError'),
+  //   emptyRss: i18nInstance.t('emptyRss'),
+  //   noRss: i18nInstance.t('noRssError'),
+  //   existingRssError: i18nInstance.t('existingRssError'),
+  // };
 
-      elements.form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const value = formData.get('url');
+  const watchedState = launchViewer(initialState);
 
-        validate(watchedState, value)
+  const loadRss = (url) => {
+    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+      .then((response) => {
+        watchedState.uiState.submitBlocked = false;
 
-          .then((val) => {
-            watchedState.validationProcess.data.hrefValue = val;
-            watchedState.uiState.submitBlocked = true;
+        const { contents } = response.data;
 
-            return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(val)}`);
-          })
+        const extractedData = parse(contents, watchedState);
 
-          .then((response) => {
-            console.log('data', response);
-            watchedState.uiState.submitBlocked = false;
+        console.log('data from parse with error', extractedData);
 
-            const { contents } = response.data;
+        const { feed, newPosts } = extractedData;
 
-            if (_.isEmpty(parse(contents, watchedState))) {
-              Promise.reject(response);
-            } const extractedData = parse(contents, watchedState);
+        const { posts } = watchedState;
+        watchedState.feeds.push(feed);
+        watchedState.posts = [...posts, ...newPosts];
 
-            console.log('data from parse with error', extractedData);
+        const addToUiState = (post) => ({
+          id: post.id,
+          style: 'default',
+        });
+        watchedState.validatedUrls.push(watchedState.validationProcess.data.hrefValue);
 
-            const { feed, newPosts } = extractedData;
-
-            const { posts } = watchedState;
-            watchedState.feeds.push(feed);
-            watchedState.posts = [...posts, ...newPosts];
-
-            const addToUiState = (post) => ({
-              id: post.id,
-              style: 'default',
-            });
-            watchedState.validatedUrls.push(watchedState.validationProcess.data.hrefValue);
-
-            watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
-          })
-
-          .catch((err) => {
-            watchedState.uiState.submitBlocked = false;
-
-            if (err.name === 'ValidationError') {
-              watchedState.validationProcess.error = err.errors;
-              watchedState.process = 'validationFail';
-              watchedState.process = '';
-              throw new Error('validation');
-            } else {
-              watchedState.process = 'networkFail';
-              watchedState.process = '';
-              throw new Error('network');
-            }
-          })
-
-          .then(() => {
-            watchedState.process = 'rssLoaded';
-            watchedState.process = '';
-            const { validatedUrls } = watchedState;
-            console.log('then after error handling');
-
-            validatedUrls.forEach((url) => {
-              fetchWithTimeout(url, watchedState);
-            });
-          });
+        watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
+        watchedState.process = 'rssLoaded';
+        watchedState.process = '';
+      })
+      .catch((err) => {
+        watchedState.postValidationErrors.push(err.message);
       });
+  };
 
-      elements.postsContainer.addEventListener('click', (e) => {
-        e.preventDefault();
+  elements.form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const value = formData.get('url');
 
-        const { target } = e;
+    validate(watchedState, value)
 
-        if (target.tagName === 'BUTTON') {
-          watchedState.activePost = target.dataset.id;
-          watchedState.process = 'modalWindow';
-          watchedState.process = '';
-        }
-      }, true);
+      .then((val) => {
+        watchedState.validationProcess.data.hrefValue = val;
+        watchedState.uiState.submitBlocked = true;
+        loadRss(val);
+      })
+      .catch((err) => {
+        watchedState.validationProcess.error = err.errors;
+        watchedState.process = 'validationFail';
+        watchedState.process = '';
+        throw new Error('validation');
+      });
+  }, true);
 
-      elements.postsContainer.addEventListener('click', (e) => {
-        const { target } = e;
+  const { validatedUrls } = watchedState;
+  console.log('validatedUrls', validatedUrls);
 
-        if (target.tagName === 'BUTTON' || target.tagName === 'A') {
-          console.log('click ui state!');
-          const shownPostId = target.dataset.id;
-          const { displayed } = watchedState.uiState;
+  validatedUrls.forEach((url) => {
+    fetchWithTimeout(url, watchedState);
+  });
 
-          const shownPostUi = displayed.find((item) => item.id === shownPostId);
-          shownPostUi.style = 'seen';
-        }
-      }, true);
-    });
+  elements.postsContainer.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const { target } = e;
+
+    if (target.tagName === 'BUTTON') {
+      watchedState.activePost = target.dataset.id;
+      watchedState.process = 'modalWindow';
+      watchedState.process = '';
+    }
+  }, true);
+
+  elements.postsContainer.addEventListener('click', (e) => {
+    const { target } = e;
+
+    if (target.tagName === 'BUTTON' || target.tagName === 'A') {
+      console.log('click ui state!');
+      const shownPostId = target.dataset.id;
+      const { displayed } = watchedState.uiState;
+
+      const shownPostUi = displayed.find((item) => item.id === shownPostId);
+      shownPostUi.style = 'seen';
+    }
+  }, true);
 };
 
 export default app;

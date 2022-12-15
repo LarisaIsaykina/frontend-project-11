@@ -24,11 +24,18 @@ const launchViewer = (initialState) => {
     },
   });
 
+  const errorCodes = {
+    network: i18nInstance.t('networkError'),
+    validation: i18nInstance.t('invalidRssError'),
+    emptyRss: i18nInstance.t('emptyRss'),
+    noRss: i18nInstance.t('noRssError'),
+    existingRssError: i18nInstance.t('existingRssError'),
+  };
+
   document.querySelector('h1').textContent = i18nInstance.t('header1');
   document.querySelector('.lead').textContent = i18nInstance.t('header2');
   // document.querySelector('.text-muted').textContent = i18nInstance.t('urlExample');
   document.querySelector('button[type="submit"]').textContent = i18nInstance.t('btnSubmit');
-  console.log('ищем кнопку submit', document.querySelector('button[type="submit"]'));
   document.querySelector('label[for="url-input"]').textContent = i18nInstance.t('inputLabel');
 
   const watchedState = onChange(initialState, (path, value) => {
@@ -38,7 +45,9 @@ const launchViewer = (initialState) => {
         elements.feedBackMessageParagraph.textContent = '';
         elements.feedBackMessageParagraph.classList.remove('text-success');
         elements.feedBackMessageParagraph.classList.add('text-danger');
-        elements.feedBackMessageParagraph.textContent = watchedState.validationProcess.error;
+
+        const { error } = watchedState.validationProcess;
+        elements.feedBackMessageParagraph.textContent = i18nInstance.t(error);
       } else if (value === 'rssLoaded' || value === 'rssUpdated') {
         elements.feedBackMessageParagraph.textContent = '';
 
@@ -149,15 +158,12 @@ const launchViewer = (initialState) => {
         modalBody.textContent = postData.description;
         const modalHref = document.querySelector('.full-article');
         modalHref.href = postData.link;
-      } else if (value === 'networkFail') {
-        elements.feedBackMessageParagraph.textContent = '';
-        elements.feedBackMessageParagraph.textContent = i18nInstance.t('networkError');
       }
-    } else if (path.startsWith('noRssError')) {
+    } else if (path.startsWith('postValidationErrors')) {
       const currentError = value[value.length - 1].message;
-      console.log('current error', currentError);
+      console.log('current error', currentError); // 3 types: net, empty, no-rss
 
-      const textError = (currentError === 'parseerror') ? i18nInstance.t('noRssError') : i18nInstance.t('emptyRss');
+      const textError = i18nInstance.t(currentError);
 
       elements.feedBackMessageParagraph.classList.remove('text-success');
       elements.feedBackMessageParagraph.classList.add('text-danger');

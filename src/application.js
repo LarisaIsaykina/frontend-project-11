@@ -86,7 +86,9 @@ const app = () => {
             });
           })
           .catch((err) => {
+            console.log(err.message, 'err message catch');
             watchedState.postValidationErrors.push(err.message);
+            throw new Error(err);
           });
       };
 

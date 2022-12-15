@@ -13,8 +13,8 @@ export default (href, viewer) => {
         updateParsing(contents, viewer); // we say about current url with a unique doc
       })
       .catch((err) => {
-        console.log('err message');
-        viewer.postValidationErrors.push(err.message);
+        console.log('err code', err.code);
+        viewer.postValidationErrors.push(err.name);
       });
   };
 

@@ -24,17 +24,8 @@ const launchViewer = (initialState) => {
     },
   });
 
-  const errorCodes = {
-    network: i18nInstance.t('networkError'),
-    validation: i18nInstance.t('invalidRssError'),
-    emptyRss: i18nInstance.t('emptyRss'),
-    noRss: i18nInstance.t('noRssError'),
-    existingRssError: i18nInstance.t('existingRssError'),
-  };
-
   document.querySelector('h1').textContent = i18nInstance.t('header1');
   document.querySelector('.lead').textContent = i18nInstance.t('header2');
-  // document.querySelector('.text-muted').textContent = i18nInstance.t('urlExample');
   document.querySelector('button[type="submit"]').textContent = i18nInstance.t('btnSubmit');
   document.querySelector('label[for="url-input"]').textContent = i18nInstance.t('inputLabel');
 
@@ -160,8 +151,8 @@ const launchViewer = (initialState) => {
         modalHref.href = postData.link;
       }
     } else if (path.startsWith('postValidationErrors')) {
-      const currentError = value[value.length - 1].message;
-      console.log('current error', currentError); // 3 types: net, empty, no-rss
+      const currentError = value[value.length - 1];
+      console.log('current value', value); // 3 types: net, empty, no-rss
 
       const textError = i18nInstance.t(currentError);
 

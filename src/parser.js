@@ -10,7 +10,7 @@ export default (contents) => {
 
   if (parseerror) {
     console.log(('parseerorro!'));
-    throw new Error('parseerror');
+    throw new Error('noRssError');
   }
 
   const itemEls = dom.querySelectorAll('item');

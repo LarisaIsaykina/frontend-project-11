@@ -16,7 +16,8 @@
       "front-end",
       "DOM",
       "AJAX",
-      "validation"
+      "validation",
+      "aggregator",
     ],
     "author": "lisaykina",
     "license": "ISC",

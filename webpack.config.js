@@ -1,10 +1,5 @@
-import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
-
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-
-const dir = dirname(fileURLToPath(import.meta.url));
 
 export default {
   mode: process.env.NODE_ENV || 'development',
@@ -13,10 +8,6 @@ export default {
     open: true,
   },
   entry: './src/index.js',
-  output: {
-    filename: 'main.js',
-    path: resolve(dir, 'dist'),
-  },
 
   module: {
     rules: [

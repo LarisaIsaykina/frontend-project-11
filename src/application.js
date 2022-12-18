@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import axios from 'axios';
+import _ from 'lodash';
 import validate from './validation.js';
 import { launchViewer, elements } from './viewer.js';
 import ru from './locales/ru.js';
@@ -7,6 +8,8 @@ import parse from './parser.js';
 import fetchWithTimeout from './fetchWithTimeout.js';
 
 import 'bootstrap';
+
+const addProxyToUrl = (href) => `https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(href)}`;
 
 const app = () => {
   const initialState = {
@@ -16,10 +19,6 @@ const app = () => {
     activePost: '',
 
     validationProcess: {
-      isValid: '',
-      data: {
-        hrefValue: '',
-      },
       error: '',
     },
 
@@ -28,12 +27,10 @@ const app = () => {
 
     posts: [],
 
-    validatedUrls: [],
     newPosts: [],
+    shown: [],
 
     uiState: {
-      displayed: [
-      ],
       submitBlocked: false,
     },
 
@@ -51,42 +48,62 @@ const app = () => {
     .then(() => {
       const watchedState = launchViewer(initialState);
 
+      const addDataToState = (dom, url) => {
+        const itemEls = dom.querySelectorAll('item');
+        if (itemEls.length === 0) {
+          watchedState.postValidationErrors.push('emptyRss');
+        }
+
+        const items = Array.from(dom.querySelectorAll('item'));
+        const data = {
+
+          feed: {
+            title: dom.querySelector('title').textContent,
+            id: _.uniqueId('f'),
+            description: dom.querySelector('description').textContent,
+            link: dom.querySelector('link').textContent,
+            feedUrl: url,
+          },
+        };
+
+        const currFeedId = data.feed.id;
+
+        const addPostData = (postEl, feedId) => ({
+          fId: feedId,
+          id: _.uniqueId(''),
+          title: postEl.querySelector('title').textContent,
+          description: postEl.querySelector('description').textContent,
+          link: postEl.querySelector('link').textContent,
+        });
+        const postsColl = items.map((item) => addPostData(item, currFeedId));
+        data.currPosts = postsColl;
+
+        return data;
+      };
+
       const loadRss = (url) => {
-        axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+        axios.get(addProxyToUrl(url))
           .then((response) => {
             watchedState.uiState.submitBlocked = false;
 
             const { contents } = response.data;
 
-            const extractedData = parse(contents, watchedState);
+            const parsedDom = parse(contents);
 
-            console.log('data from parse with error', extractedData);
+            const extractedData = addDataToState(parsedDom, url);
 
-            const { feed, newPosts } = extractedData;
+            const { feed, currPosts } = extractedData;
 
-            const { posts } = watchedState;
             watchedState.feeds.push(feed);
-            watchedState.posts = [...posts, ...newPosts];
+            watchedState.posts = currPosts;
 
-            const addToUiState = (post) => ({
-              id: post.id,
-              style: 'default',
-            });
-            watchedState.validatedUrls.push(url);
-
-            watchedState.uiState.displayed = watchedState.posts.map((item) => addToUiState(item));
             watchedState.process = 'rssLoaded';
             watchedState.process = '';
-            const { validatedUrls } = watchedState;
-            console.log('validatedUrls', Array.isArray(validatedUrls), validatedUrls.length);
-
-            validatedUrls.forEach((urll) => {
-              console.log('for each hanging fetchtimeout');
-              fetchWithTimeout(urll, watchedState);
-            });
           })
+
           .catch((err) => {
-            console.log(err.message, 'err message catch');
+            watchedState.uiState.submitBlocked = false;
+            console.log(err.message, 'err message catch', 'err', err);
             watchedState.postValidationErrors.push(err.message);
             throw new Error(err);
           });
@@ -95,14 +112,14 @@ const app = () => {
       elements.form.addEventListener('submit', (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
-        const value = formData.get('url');
+        const url = formData.get('url');
+        const validatedUrls = watchedState.feeds.map((item) => item.feedUrl);
 
-        validate(watchedState, value)
+        validate(validatedUrls, url)
 
-          .then((val) => {
-            watchedState.validationProcess.data.hrefValue = val;
+          .then((validatedUrl) => {
             watchedState.uiState.submitBlocked = true;
-            loadRss(val);
+            loadRss(validatedUrl);
           })
           .catch((err) => {
             watchedState.validationProcess.error = err.errors;
@@ -113,29 +130,19 @@ const app = () => {
       }, true);
 
       elements.postsContainer.addEventListener('click', (e) => {
-        e.preventDefault();
-
         const { target } = e;
 
-        if (target.tagName === 'BUTTON') {
-          watchedState.activePost = target.dataset.id;
-          watchedState.process = 'modalWindow';
-          watchedState.process = '';
+        const shownPostId = target.dataset.id;
+        if (!shownPostId) {
+          return;
         }
-      }, true);
-
-      elements.postsContainer.addEventListener('click', (e) => {
-        const { target } = e;
-
-        if (target.tagName === 'BUTTON' || target.tagName === 'A') {
-          console.log('click ui state!');
-          const shownPostId = target.dataset.id;
-          const { displayed } = watchedState.uiState;
-
-          const shownPostUi = displayed.find((item) => item.id === shownPostId);
-          shownPostUi.style = 'seen';
-        }
-      }, true);
+        watchedState.shown.push(shownPostId);
+        watchedState.activePost = shownPostId;
+      });
+      watchedState.feeds.forEach((item) => {
+        const { feedUrl } = item;
+        fetchWithTimeout(feedUrl, watchedState);
+      });
     });
 };
 

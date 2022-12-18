@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-export default (viewer, value) => {
+export default (existingReferences, value) => {
   yup.setLocale({
     mixed: {
       notOneOf: 'existingRssError',
@@ -10,7 +10,6 @@ export default (viewer, value) => {
     },
   });
 
-  const existingReferences = viewer.validatedUrls;
   const schema = yup.string().url().notOneOf(existingReferences);
   return schema.validate(value);
 };

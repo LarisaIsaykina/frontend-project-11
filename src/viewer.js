@@ -92,8 +92,6 @@ const launchViewer = (initialState) => {
 
         const currPosts = posts.filter((post) => post.fId === id);
 
-        const postsUiState = watchedState.uiState.displayed;
-
         const postEls = currPosts.map((post) => {
           const li = document.createElement('li');
           li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
@@ -103,9 +101,7 @@ const launchViewer = (initialState) => {
           a.href = post.link;
           a.textContent = post.title;
           a.dataset.id = post.id;
-          const postInUi = postsUiState.find((item) => item.id === post.id);
-          const { style } = postInUi;
-          const styleToApply = (style === 'default') ? 'fw-bold' : 'fw-normal';
+          const styleToApply = (watchedState.shown.includes(post.id)) ? 'fw-normal' : 'fw-bold';
           a.classList.add(styleToApply);
           a.setAttribute('data-id', post.id);
 
@@ -139,39 +135,21 @@ const launchViewer = (initialState) => {
         });
         ulFeeds.prepend(...feedEls);
         feedsInnerContainer.replaceChildren(ulFeeds);
-      } else if (value === 'modalWindow') {
-        const { activePost, posts } = watchedState;
-
-        const postData = posts.find((item) => item.id === activePost);
-        const modalTitle = document.querySelector('.modal-title');
-        modalTitle.textContent = postData.title;
-        const modalBody = document.querySelector('.modal-body');
-        modalBody.textContent = postData.description;
-        const modalHref = document.querySelector('.full-article');
-        modalHref.href = postData.link;
       }
     } else if (path.startsWith('postValidationErrors')) {
       const currentError = value[value.length - 1];
       console.log('current value', value); // 3 types: net, empty, no-rss
-
       const textError = i18nInstance.t(currentError);
-
       elements.feedBackMessageParagraph.classList.remove('text-success');
       elements.feedBackMessageParagraph.classList.add('text-danger');
       elements.feedBackMessageParagraph.textContent = textError;
-    } else if (path.startsWith('uiState.displayed')) {
-      console.log('state in render', watchedState.uiState.displayed);
-      const coll = watchedState.uiState.displayed;
-      console.log('coll foreach all posts in ui state', coll);
-
-      coll.forEach((post) => {
-        if (post.style === 'seen') {
-          const { id } = post;
-          const elToSetStyle = document.querySelector(`a[data-id="${id}"]`);
-          console.log(elToSetStyle, 'element to change style');
-          elToSetStyle.classList.remove('fw-bold');
-          elToSetStyle.classList.add('fw-normal');
-        }
+    } else if (path.startsWith('shown')) {
+      const { shown } = watchedState;
+      shown.forEach((id) => {
+        const elToSetStyle = document.querySelector(`a[data-id="${id}"]`);
+        console.log(elToSetStyle, 'element to change style');
+        elToSetStyle.classList.remove('fw-bold');
+        elToSetStyle.classList.add('fw-normal');
       });
     } else if (path === 'uiState.submitBlocked') {
       if (value === true) {
@@ -179,6 +157,15 @@ const launchViewer = (initialState) => {
       } else {
         elements.submitBtn.disabled = false;
       }
+    } else if (path === 'activePost') {
+      const { posts } = watchedState;
+      const postData = posts.find((item) => item.id === value);
+      const modalTitle = document.querySelector('.modal-title');
+      modalTitle.textContent = postData.title;
+      const modalBody = document.querySelector('.modal-body');
+      modalBody.textContent = postData.description;
+      const modalHref = document.querySelector('.full-article');
+      modalHref.href = postData.link;
     }
   });
 

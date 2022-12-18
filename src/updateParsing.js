@@ -17,10 +17,6 @@ export default (contents, viewer) => { // контент с конкретной
   const postsInState = posts.filter((post) => post.fId === currFeedId);
 
   const postTitles = postsInState.map((post) => post.title);
-  const addToUiState = (post) => ({
-    id: post.id,
-    style: 'default',
-  });
 
   const newPosts = [];
 
@@ -53,9 +49,6 @@ export default (contents, viewer) => { // контент с конкретной
 
   if (!_.isEmpty(newPosts) && newPosts[0].fId === idOfShown) {
     viewer.newPosts = newPosts;
-    const { displayed } = viewer.uiState;
-    const newDisplayed = newPosts.map(addToUiState);
-    viewer.uiState.displayed = [...displayed, ...newDisplayed];
     viewer.process = 'rssUpdated';
     viewer.process = '';
   }

@@ -1,10 +1,12 @@
 import axios from 'axios';
 import updateParsing from './updateParsing.js';
 
+const addProxyToUrl = (href) => `https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(href)}`;
+
 export default (href, viewer) => {
   const fetchData = () => {
     console.log('before get request');
-    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(href)}`)
+    axios.get(addProxyToUrl(href))
 
       .then((response) => {
         console.log('response', response);
@@ -12,9 +14,8 @@ export default (href, viewer) => {
 
         updateParsing(contents, viewer); // we say about current url with a unique doc
       })
-      .catch((err) => {
-        console.log('err code', err.code);
-        viewer.postValidationErrors.push(err.name);
+      .catch(() => {
+        viewer.postValidationErrors.push('Network Error');
       });
   };
 

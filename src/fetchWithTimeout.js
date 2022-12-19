@@ -3,24 +3,25 @@ import updateParsing from './updateParsing.js';
 
 const addProxyToUrl = (href) => `https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(href)}`;
 
-export default (href, viewer) => {
-  const fetchData = () => {
-    console.log('before get request');
-    axios.get(addProxyToUrl(href))
+const repeatGetRequest = (href, viewer) => {
+  console.log('before get request');
+  const promise = axios.get(addProxyToUrl(href))
 
-      .then((response) => {
-        console.log('response', response);
-        const { contents } = response.data;
+    .then((response) => {
+      console.log('response', response);
+      const { contents } = response.data;
 
-        updateParsing(contents, viewer); // we say about current url with a unique doc
-      })
-      .catch(() => {
-        viewer.postValidationErrors.push('Network Error');
-      });
-  };
-
-  setTimeout(function recursiveFetch() {
-    fetchData();
-    setTimeout(recursiveFetch, 5000);
-  }, 5000);
+      updateParsing(contents, viewer); // we say about current url with a unique doc
+    })
+    .catch(() => {
+      viewer.postValidationErrors.push('Network Error');
+    });
+  return promise;
 };
+
+export default repeatGetRequest;
+//   setTimeout(function recursiveFetch() {
+//     fetchData();
+//     setTimeout(recursiveFetch, 5000);
+//   }, 5000);
+// };

@@ -5,7 +5,7 @@ import validate from './validation.js';
 import { launchViewer, elements } from './viewer.js';
 import ru from './locales/ru.js';
 import parse from './parser.js';
-import fetchWithTimeout from './fetchWithTimeout.js';
+import repeatGetRequest from './fetchWithTimeout.js';
 
 import 'bootstrap';
 
@@ -27,7 +27,7 @@ const app = () => {
 
     posts: [],
 
-    newPosts: [],
+    // newPosts: [],
     shown: [],
 
     uiState: {
@@ -99,6 +99,10 @@ const app = () => {
 
             watchedState.process = 'rssLoaded';
             watchedState.process = '';
+            // watchedState.feeds.forEach((item) => {
+            //   const { feedUrl } = item;
+            //   fetchWithTimeout(feedUrl, watchedState);
+            // });
           })
 
           .catch((err) => {
@@ -139,10 +143,21 @@ const app = () => {
         watchedState.shown.push(shownPostId);
         watchedState.activePost = shownPostId;
       });
-      watchedState.feeds.forEach((item) => {
-        const { feedUrl } = item;
-        fetchWithTimeout(feedUrl, watchedState);
-      });
+      console.log('before launch update');
+
+      const launchUpdate = (state) => {
+        console.log('state feeds', state.feeds);
+        const promises = state.feeds.map((item) => {
+          console.log('item', item);
+
+          const { feedUrl } = item;
+          const promise = repeatGetRequest(feedUrl, state);
+          return promise;
+        });
+        return Promise.all(promises);
+      };
+      console.log('before set time out');
+      setTimeout(launchUpdate, 5000, watchedState);
     });
 };
 

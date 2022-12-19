@@ -48,7 +48,6 @@ export default (contents, viewer) => { // контент с конкретной
   console.log('is Empty newposts?', (_.isEmpty(newPosts)));
 
   if (!_.isEmpty(newPosts) && newPosts[0].fId === idOfShown) {
-    viewer.newPosts = newPosts;
     viewer.process = 'rssUpdated';
     viewer.process = '';
   }

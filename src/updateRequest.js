@@ -20,8 +20,3 @@ const repeatGetRequest = (href, viewer) => {
 };
 
 export default repeatGetRequest;
-//   setTimeout(function recursiveFetch() {
-//     fetchData();
-//     setTimeout(recursiveFetch, 5000);
-//   }, 5000);
-// };

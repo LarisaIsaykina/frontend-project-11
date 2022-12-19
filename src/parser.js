@@ -4,10 +4,8 @@ export default (contents) => {
   console.log('dom', dom);
 
   const parseerror = dom.querySelector('parsererror');
-  console.log('parseerr el', parseerror);
 
   if (parseerror) {
-    console.log(('parseerorro!'));
     throw new Error('noRssError');
   } return dom;
 };

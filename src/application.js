@@ -5,7 +5,7 @@ import validate from './validation.js';
 import { launchViewer, elements } from './viewer.js';
 import ru from './locales/ru.js';
 import parse from './parser.js';
-import repeatGetRequest from './updateRequest.js';
+import updateFeedsData from './updateFeedsData.js';
 
 import 'bootstrap';
 
@@ -134,10 +134,9 @@ const app = () => {
       });
 
       const launchUpdate = (state) => {
-        console.log('state feeds', state.feeds);
         const promises = state.feeds.map((item) => {
           const { feedUrl } = item;
-          const promise = repeatGetRequest(feedUrl, state);
+          const promise = updateFeedsData(feedUrl, state);
           return promise;
         });
         Promise.all(promises).then(() => setTimeout(launchUpdate, 5000, watchedState));

@@ -3,7 +3,7 @@ import updateParsing from './updateParsing.js';
 
 const addProxyToUrl = (href) => `https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(href)}`;
 
-const repeatGetRequest = (href, viewer) => {
+const updateFeedsData = (href, viewer) => {
   console.log('before get request');
   const promise = axios.get(addProxyToUrl(href))
 
@@ -19,4 +19,4 @@ const repeatGetRequest = (href, viewer) => {
   return promise;
 };
 
-export default repeatGetRequest;
+export default updateFeedsData;

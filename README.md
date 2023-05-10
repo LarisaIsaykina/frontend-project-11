@@ -9,3 +9,5 @@ The 'RSS-aggregator' is an application providing the RSS-news updating every 500
 Previewing the posts via modal window is available.
 
 visit the app via the link https://frontend-project-11-pvhff5lb7-larisaisaykina.vercel.app/
+
+The app was written on Promises, asyc/await are not used.
